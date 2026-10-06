@@ -1,0 +1,66 @@
+# Build
+bin/
+obj/
+
+# User specific
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code
+.vscode/
+.vs/
+
+# Rider
+.idea/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Publish output
+publish/
+
+# Dotnet local
+*.runtimeconfig.dev.json
+
+# NuGet
+*.nupkg
+packages/
+
+# node modules (osriacasoo algo web)
+node_modules/
+
+# EF migrations (posriacasoo)
+Migrations/
+
+# ASP.NET
+appsettings.Development.json
+
+# dotnet test
+TestResults/
+
+# coverage
+coverage/
+
+# Mac / Linux temp
+*.swp
+*.tmp
+
+*.cache
+
+# .NET
+.dotnet/
+
+# Configuración local de NuGet
+.sandbox-appdata/
+
+.env
+
+# SonarScanner: resultados locales del analisis
+.sonarqube/
+.scannerwork/

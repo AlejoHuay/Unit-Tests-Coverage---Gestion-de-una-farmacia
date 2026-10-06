@@ -1,0 +1,146 @@
+@page
+@model ProyectoArqSoft.Pages.ClienteModel
+@{
+    var modalId = "confirmarEliminarClienteModal";
+}
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-success">Clientes Registrados</h2>
+
+        <a asp-page="ClienteCreate" class="btn-main">
+            + Nuevo Cliente
+        </a>
+    </div>
+
+    <form method="get" class="mb-4">
+        <div class="card-module p-3">
+            <div class="input-group">
+                <label for="filtroCliente" class="visually-hidden">
+                    Buscar cliente
+                    </label>
+                <input type="text"
+                       id="filtroCliente"
+                       name="filtro"
+                       class="form-control"
+                       placeholder="Buscar por NIT o razon social..."
+                       value="@Model.Estado.FiltroActual" />
+
+                <button type="submit" class="btn btn-success btn-fixed">
+                    Buscar
+                </button>
+
+                <a asp-page="Cliente" class="btn btn-secondary btn-fixed">
+                    Limpiar
+                </a>
+            </div>
+        </div>
+    </form>
+
+    @if (!string.IsNullOrEmpty(Model.Estado.Mensaje))
+    {
+        <div class="alert alert-success shadow-sm">@Model.Estado.Mensaje</div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.Estado.MensajeError))
+    {
+        <div class="alert alert-danger shadow-sm">@Model.Estado.MensajeError</div>
+    }
+
+    <div class="card-module">
+        <table class="table table-hover align-middle">
+            <caption class="visually-hidden">Tabla de clientes registrados con NIT, razon social, correo electronico y acciones disponibles.</caption>
+            <thead class="table-success">
+                <tr>
+                    <th>NIT</th>
+                    <th>Razón Social</th>
+                    <th>Correo Electrónico</th>
+                    <th style="width:170px">Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model.ClienteDataTable.Rows.Count > 0)
+                {
+                    @foreach (System.Data.DataRow row in Model.ClienteDataTable.Rows)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@row["nit"]</td>
+                            <td>@row["razon_social"]</td>
+                            <td>@row["correo_electronico"]</td>
+                            <td>
+                                <form method="post"
+                                      asp-page="ClienteEdit"
+                                      asp-page-handler="CargarClienteParaEdicion"
+                                      style="display:inline;">
+                                    <input type="hidden" name="id" value="@row["id"]" />
+                                    <button type="submit" class="btn btn-warning btn-sm">
+                                        Editar
+                                    </button>
+                                </form>
+
+                                <button type="button"
+                                        class="btn btn-danger btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#@modalId"
+                                        data-id="@row["id"]"
+                                        data-nombre="@row["razon_social"]">
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">No se encontraron clientes.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal fade" id="@modalId" tabindex="-1" aria-labelledby="@(modalId)Label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background-color: #0b5d3b;">
+                    <h5 class="modal-title" id="@(modalId)Label">Confirmar eliminacion</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">Esta seguro de que desea eliminar este cliente?</p>
+                    <p class="fw-semibold mb-0" id="clienteEliminarNombre"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <form method="post" asp-page-handler="EliminarClienteLogicamente">
+                        <input type="hidden" name="id" id="clienteEliminarId" />
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const modal = document.getElementById('@modalId');
+            if (!modal) return;
+
+            modal.addEventListener('show.bs.modal', event => {
+                const button = event.relatedTarget;
+                const id = button.getAttribute('data-id');
+                const nombre = button.getAttribute('data-nombre');
+
+                modal.querySelector('#clienteEliminarId').value = id;
+                modal.querySelector('#clienteEliminarNombre').textContent = nombre;
+            });
+        })();
+    </script>
+}
+

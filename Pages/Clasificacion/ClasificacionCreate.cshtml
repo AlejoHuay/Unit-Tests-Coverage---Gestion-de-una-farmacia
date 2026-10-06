@@ -1,0 +1,73 @@
+@page
+@model ProyectoArqSoft.Pages.ClasificacionCreateModel
+
+<div class="container py-5 medicamento-form-page">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="med-card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+                <div class="med-card-header text-center bg-success text-white py-3">
+                    <h2 class="mb-0 fw-bold text-white">Nueva Clasificación</h2>
+                    <p class="mb-0 small">Completa los datos para registrar una clasificación</p>
+                </div>
+
+                <div class="med-card-body p-4">
+                    <form method="post" asp-page-handler="CrearClasificacion">
+                        <div class="form-floating mb-3">
+                            <input asp-for="Nombre"
+                             id="Nombre"
+                             class="form-control med-input" 
+                             placeholder="Nombre" 
+                             required />
+                            <label asp-for="Nombre"
+                              for="Nombre"
+                              class="ms-2">
+                             Nombre de Clasificación
+                            </label>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <select asp-for="Origen" 
+                                    id="Origen"
+                                    class="form-select med-input" 
+                                    required>
+                                <option value="" selected disabled>Seleccione un origen</option>
+                                <option value="Natural">Natural</option>
+                                <option value="Sintético">Sintético</option>
+                                <option value="Semisintético">Semisintético</option>
+                            </select>
+                            <label asp-for="Origen"
+                                   for="Origen"
+                                   class="ms-2">
+                                Origen
+                            </label>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <textarea asp-for="Descripcion"
+                                      id="Descripcion"
+                                      class="form-control med-input" 
+                                      placeholder="Descripción" 
+                                      style="height: 120px" 
+                                      required></textarea>
+                            <label asp-for="Descripcion"
+                                   for="Descripcion"
+                                   class="ms-2">
+                                 Descripción Detallada
+                            </label>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Estado.MensajeError))
+                        {
+                            <div class="alert alert-danger border-0 shadow-sm">@Model.Estado.MensajeError</div>
+                        }
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a asp-page="Clasificacion" class="btn btn-secondary px-4">Volver</a>
+                            <button type="submit" class="btn btn-success px-5 fw-bold shadow-sm" style="background-color: #198754;">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

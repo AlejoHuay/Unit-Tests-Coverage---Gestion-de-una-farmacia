@@ -1,0 +1,162 @@
+@page
+@model ProyectoArqSoft.Pages.ClasificacionModel
+@{
+}
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-success">Clasificaciones</h2>
+
+        <a asp-page="ClasificacionCreate" class="btn-main">
+            + Nueva Clasificación
+        </a>
+    </div>
+
+    <form method="get" class="mb-4">
+        <div class="card-module p-3">
+            <div class="input-group">
+                <label for="filtroClasificacion" class="visually-hidden">
+                    Buscar clasificación
+                </label>
+                <input type="text"
+                       id="filtroClasificacion"
+                       name="filtro"
+                       class="form-control"
+                       placeholder="Buscar por nombre, origen o descripción..."
+                       value="@Model.Estado.FiltroActual" />
+
+                <button type="submit" class="btn btn-success btn-fixed">
+                    Buscar
+                </button>
+
+                <a asp-page="Clasificacion" class="btn btn-secondary btn-fixed">
+                    Limpiar
+                </a>
+            </div>
+        </div>
+    </form>
+
+    @if (!string.IsNullOrEmpty(Model.Estado.Mensaje))
+    {
+        <div class="alert alert-success shadow-sm">@Model.Estado.Mensaje</div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.Estado.MensajeError))
+    {
+        <div class="alert alert-danger shadow-sm">@Model.Estado.MensajeError</div>
+    }
+
+    <div class="card-module">
+        <table class="table table-hover align-middle">
+            <caption class="visually-hidden">Tabla de clasificaciones de medicamentos con origen, descripcion y acciones disponibles.</caption>
+            <thead class="table-success">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Origen</th>
+                    <th>Descripción</th>
+                    <th style="width:170px">Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (System.Data.DataRow row in Model.ClasificacionDataTable.Rows)
+                {
+                    <tr>
+                        <td class="fw-semibold">@row["nombre"]</td>
+                        <td>@row["origen"]</td>
+                        <td>@row["descripcion"]</td>
+                        <td>
+                            <form method="post"
+                                  asp-page="ClasificacionUpdate"
+                                  asp-page-handler="CargarClasificacionParaEdicion"
+                                  style="display:inline;">
+
+                                <input type="hidden"
+                                       name="id"
+                                       value="@row["id"]" />
+
+                                <button type="submit" class="btn btn-warning btn-sm">
+                                    Editar
+                                </button>
+                            </form>
+
+                            <button type="button"
+                                    class="btn btn-danger btn-sm btnEliminar"
+                                    data-id="@row["id"]"
+                                    data-nombre="@row["nombre"]"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalEliminarClasificacion">
+                                Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade"
+     id="modalEliminarClasificacion"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Confirmar eliminación</h5>
+
+                <button type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <p>¿Está seguro de que desea eliminar esta clasificación?</p>
+                <p class="fw-bold" id="nombreClasificacionEliminar"></p>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <form method="post"
+                      asp-page-handler="EliminarClasificacionLogicamente">
+
+                    <input type="hidden"
+                           id="idClasificacionEliminar"
+                           name="id" />
+
+                    <button type="submit"
+                            class="btn btn-danger">
+                        Eliminar
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const botonesEliminar = document.querySelectorAll(".btnEliminar");
+
+        botonesEliminar.forEach(boton => {
+            boton.addEventListener("click", function () {
+                const id = this.getAttribute("data-id");
+                const nombre = this.getAttribute("data-nombre");
+
+                document.getElementById("idClasificacionEliminar").value = id;
+                document.getElementById("nombreClasificacionEliminar").textContent = nombre;
+            });
+        });
+    });
+</script>
+

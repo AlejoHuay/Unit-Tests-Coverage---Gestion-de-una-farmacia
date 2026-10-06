@@ -1,0 +1,107 @@
+@page
+@model ProyectoArqSoft.Pages.Auth.ActivarCuentaModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Activar Cuenta - Farmacia VitalCare</title>
+    <link rel="stylesheet" href="~/css/activar-cuenta.css" />
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-container">
+            <a asp-page="/Index" class="brand-link">
+                <img src="~/images/vitalcare.png" alt="VitalCare" class="brand-logo" />
+                <span class="brand-name">VitalCare</span>
+            </a>
+
+            <nav class="topbar-nav">
+                <a asp-page="/Index">Inicio</a>
+                <a asp-page="/Auth/Login">Login</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="activation-page">
+        <section class="activation-wrapper">
+            <div class="activation-left">
+                <span class="activation-badge">ACTIVACIÓN</span>
+                <h1>Activa tu cuenta<br />en VitalCare</h1>
+                <p>
+                    Por seguridad, debes definir una nueva contraseña para completar
+                    la activación de tu cuenta y acceder al sistema.
+                </p>
+
+                <div class="activation-note">
+                    El enlace de activación tiene una vigencia limitada. Si el enlace expiró,
+                    deberás solicitar uno nuevo.
+                </div>
+
+                <div class="activation-actions">
+                    <a asp-page="/Auth/Login" class="btn-outline-home">← Volver al login</a>
+                </div>
+            </div>
+
+            <div class="activation-right">
+                <div class="activation-card">
+                    <div class="logo-wrap">
+                        <img src="~/images/vitalcare.png" alt="VitalCare" class="logo" />
+                    </div>
+
+                    <div class="card-header">
+                        <h2>Activación de cuenta</h2>
+                        <p>Completa este paso para ingresar al sistema</p>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Mensaje))
+                    {
+                        <div class="alert @(Model.EsError ? "alert-error" : "alert-success")">
+                            @Model.Mensaje
+                        </div>
+                    }
+
+                    @if (Model.MostrarFormulario)
+                    {
+                        <form method="post" class="activation-form">
+                            <input type="hidden" asp-for="Token" />
+
+                            <div class="form-group">
+                                <label asp-for="NuevaPassword">Nueva contraseña</label>
+                                <input type="password"
+                                       asp-for="NuevaPassword"
+                                       placeholder="Ingresa tu nueva contraseña"
+                                       required />
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="ConfirmarPassword">Confirmar contraseña</label>
+                                <input type="password"
+                                       asp-for="ConfirmarPassword"
+                                       placeholder="Vuelve a escribir la contraseña"
+                                       required />
+                            </div>
+
+                            <button type="submit" class="btn-activate">Activar cuenta</button>
+
+                            <div class="extra-links">
+                                <a asp-page="/Auth/Login">Volver al inicio de sesión</a>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="extra-links centered">
+                            <a asp-page="/Auth/Login">Ir al inicio de sesión</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

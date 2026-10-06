@@ -1,0 +1,161 @@
+@page
+@model ProyectoArqSoft.Pages.VentaModel
+@{
+}
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-success">Ventas Registradas</h2>
+
+        <a asp-page="VentaCreate" class="btn-main">
+            + Nueva Venta
+        </a>
+    </div>
+
+    <form method="get" class="mb-4">
+        <div class="card-module p-3">
+            <div class="input-group">
+                <label for="filtroVenta" class="visually-hidden">
+                    Buscar venta
+                </label>
+                <input type="text"
+                       id="filtroVenta"
+                       name="filtro"
+                       class="form-control"
+                       placeholder="Buscar por cliente, método de pago o id de venta..."
+                       value="@Model.Estado.FiltroActual" />
+
+                <button type="submit" class="btn btn-success btn-fixed">
+                    Buscar
+                </button>
+
+                <a asp-page="Venta" class="btn btn-secondary btn-fixed">
+                    Limpiar
+                </a>
+            </div>
+        </div>
+    </form>
+
+   @if (!string.IsNullOrWhiteSpace(Model.Estado.Mensaje))
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @Model.Estado.Mensaje
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Estado.MensajeError))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @Model.Estado.MensajeError
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+    <div class="card-module">
+        <table class="table table-hover align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th>Fecha/Hora</th>
+                    <th>NIT</th>
+                    <th>Razón Social</th>
+                    <th>Método de Pago</th>
+                    <th>Total (Bs)</th>
+                    <th style="width:180px">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (System.Data.DataRow row in Model.VentaDataTable.Rows)
+                {
+                    <tr>
+                        <td>@DateTime.SpecifyKind(Convert.ToDateTime(row["fecha_hora"]), DateTimeKind.Utc).ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@row["nit"]</td>
+                        <td>@row["razon_social"]</td>
+                        <td>@row["metodo_pago"]</td>
+                        <td class="text-success fw-bold">@row["total"]</td>
+                        <td>
+                            <form method="post"
+                                  asp-page="VentaUpdate"
+                                  asp-page-handler="CargarVenta"
+                                  style="display:inline;">
+                                <input type="hidden" name="id" value="@row["id"]" />
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    Ver
+                                </button>
+                            </form>
+
+                            <button type="button"
+                                    class="btn btn-danger btn-sm btnEliminar"
+                                    data-id="@row["id"]"
+                                    data-cliente="@row["cliente"]"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalEliminarVenta">
+                                Anular
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<div class="modal fade"
+     id="modalEliminarVenta"
+     tabindex="-1"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Confirmar anulación</h5>
+                <button type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <p>¿Está seguro de que desea anular esta venta?</p>
+                <p class="fw-bold" id="clienteVentaEliminar"></p>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <form method="post"
+                      asp-page-handler="EliminarVentaLogicamente">
+                    <input type="hidden"
+                           id="idVentaEliminar"
+                           name="id" />
+                    <button type="submit"
+                            class="btn btn-danger">
+                        Anular
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const botonesEliminar = document.querySelectorAll(".btnEliminar");
+
+        botonesEliminar.forEach(boton => {
+            boton.addEventListener("click", function () {
+                const id = this.getAttribute("data-id");
+                const cliente = this.getAttribute("data-cliente");
+
+                document.getElementById("idVentaEliminar").value = id;
+                document.getElementById("clienteVentaEliminar").textContent = "Cliente: " + cliente;
+            });
+        });
+    });
+</script>
+

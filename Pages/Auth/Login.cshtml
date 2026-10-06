@@ -1,0 +1,135 @@
+﻿@page
+@model ProyectoArqSoft.Pages.Auth.LoginModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login - Farmacia VitalCare</title>
+    <link rel="stylesheet" href="~/css/login.css" />
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-container">
+            <a asp-page="/Index" class="brand-link">
+                <img src="~/images/vitalcare.png" alt="VitalCare" class="brand-logo" />
+                <span class="brand-name">VitalCare</span>
+            </a>
+
+            <nav class="topbar-nav">
+                <a asp-page="/Index">Inicio</a>
+                <a asp-page="/Auth/Register">Registro</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="login-page">
+        <section class="login-wrapper">
+            <div class="login-left">
+                <span class="login-badge">BIENVENIDO</span>
+
+                <h1>Accede a<br />Farmacia VitalCare</h1>
+
+                <p>
+                    Ingresa al sistema de gestión farmacéutica para administrar
+                    usuarios, inventario, ventas y operaciones de forma segura y eficiente.
+                </p>
+
+                <div class="login-note">
+                    Utiliza tus credenciales para entrar al sistema. Si aún no tienes una cuenta,
+                    puedes registrarte desde la opción correspondiente.
+                </div>
+
+                <div class="login-actions">
+                    <a asp-page="/Index" class="btn-outline-home"> ← Volver al inicio</a>
+                </div>
+            </div>
+
+            <div class="login-right">
+                <div class="login-card">
+                    <div class="logo-wrap">
+                        <img src="~/images/vitalcare.png" alt="VitalCare" class="logo" />
+                    </div>
+
+                    <div class="card-header">
+                        <h2>Iniciar sesión</h2>
+                        <p>Ingresa tus credenciales para acceder al sistema</p>
+                    </div>
+
+                    <form method="post" class="login-form">
+                        <div class="form-group">
+                            <label asp-for="LoginRequest.EmailOUserName">Correo electrónico o nombre de usuario</label>
+                            <input type="text"
+                                   asp-for="LoginRequest.EmailOUserName"
+                                   placeholder="Ej. usuario@correo.com o nombre de usuario"
+                                   required />
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="LoginRequest.Password" for="passwordInput">Contraseña</label>
+
+                            <div class="password-wrapper">
+                                <input type="password"
+                                       asp-for="LoginRequest.Password"
+                                       placeholder="••••••••"
+                                       required
+                                       id="passwordInput" />
+
+                                <button type="button"
+                                        class="toggle-password"
+                                        id="togglePassword"
+                                        aria-label="Mostrar contraseña"
+                                        aria-pressed="false"
+                                        title="Mostrar contraseña">
+                                    <svg class="icon-eye icon-show" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+
+                                    <svg class="icon-eye icon-hide" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 3l18 18"></path>
+                                        <path d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58"></path>
+                                        <path d="M9.88 5.09A9.77 9.77 0 0 1 12 5c6.5 0 10 7 10 7a13.16 13.16 0 0 1-2.17 2.94"></path>
+                                        <path d="M6.61 6.61A13.53 13.53 0 0 0 2 12s3.5 7 10 7a9.77 9.77 0 0 0 2.12-.23"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.MensajeError))
+                        {
+                            <div class="alert alert-error">@Model.MensajeError</div>
+                        }
+
+                        <button type="submit" class="btn-login">Ingresar</button>
+
+                        <div class="extra-links">
+                            ¿No tienes cuenta?
+                            <a asp-page="/Auth/Register">Regístrate</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const passwordInput = document.getElementById('passwordInput');
+        const togglePassword = document.getElementById('togglePassword');
+
+        togglePassword.addEventListener('click', function () {
+            const showingPassword = passwordInput.type === 'text';
+
+            passwordInput.type = showingPassword ? 'password' : 'text';
+            togglePassword.classList.toggle('active', !showingPassword);
+            togglePassword.setAttribute('aria-pressed', (!showingPassword).toString());
+            togglePassword.setAttribute('aria-label', showingPassword ? 'Mostrar contraseña' : 'Ocultar contraseña');
+            togglePassword.setAttribute('title', showingPassword ? 'Mostrar contraseña' : 'Ocultar contraseña');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+.medicamento-form-page {
+    background-color: #f4f6f5;
+    min-height: 100vh;
+}
+
+.med-card {
+    background: #ffffff;
+    border: none;
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.med-card-header {
+    padding: 2rem 2rem 1rem 2rem;
+    border-bottom: 1px solid #eef1ef;
+}
+
+.med-card-header h2 {
+    color: #198754;
+    font-weight: 700;
+}
+
+.med-card-body {
+    padding: 2rem;
+}
+
+.med-input {
+    border-radius: 12px !important;
+    border: 1px solid #d8e2dc;
+    box-shadow: none !important;
+}
+
+.med-input:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.15rem rgba(25, 135, 84, 0.15) !important;
+}
+
+.form-floating > label {
+    color: #6c757d;
+}
+
+.med-btn-primary {
+    background-color: #08752a;
+    border-color: #08752a;
+    color: #fff;
+    border-radius: 10px;
+    padding: 0.65rem 1.4rem;
+    font-weight: 600;
+}
+
+.med-btn-primary:hover {
+    background-color: #066622;
+    border-color: #066622;
+    color: #fff;
+}
+
+.med-btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+    border-radius: 10px;
+    padding: 0.65rem 1.4rem;
+    font-weight: 600;
+}
+
+.med-btn-secondary:hover {
+    background-color: #5c636a;
+    border-color: #5c636a;
+    color: #fff;
+}
+
+.med-alert {
+    border-radius: 12px;
+    margin-top: 0.5rem;
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.input-group .form-control,
+.input-group .input-group-text,
+.med-input {
+    height: 48px;
+}
+
+.form-text {
+    min-height: 20px;
+}

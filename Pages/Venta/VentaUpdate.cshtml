@@ -1,0 +1,186 @@
+@page
+@model ProyectoArqSoft.Pages.VentaUpdateModel
+@{
+}
+
+<div class="container py-5 medicamento-form-page">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <div class="med-card shadow-sm">
+                <div class="med-card-header text-center">
+                    <h2 class="mb-0">Detalle de Venta</h2>
+                    <p class="text-muted mt-2 mb-0">Datos de la venta seleccionada</p>
+                </div>
+
+                <div class="med-card-body">
+
+                    <input type="hidden" asp-for="IdVenta" />
+                    <input type="hidden" asp-for="DetallesJson" id="DetallesJson" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                             <div class="form-label fw-bold d-block text-start">
+                                   Cliente (NIT)
+                             </div>
+                             <div id="clienteBusqueda"
+                                 class="form-control-plaintext text-start fw-semibold py-1"></div>
+                                 <div class="form-label fw-bold mt-2 d-block text-start">
+                                   Cliente:
+                                 </div>
+                            <div id="razonSocialCliente"
+                                 class="form-control-plaintext text-start fw-semibold py-1"></div>
+
+                            <input type="hidden"
+                                   asp-for="IdCliente"
+                                   id="IdCliente" />
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="MetodoPago" class="form-label d-block text-start">Método de Pago</label>
+                            <div class="form-control-plaintext text-start fw-semibold py-1">
+                                @Model.MetodoPago
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Detalle de venta</h5>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle" id="tablaDetalles">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>Medicamento</th>
+                                    <th style="width:130px;">Cantidad</th>
+                                    <th style="width:160px;">Precio Unitario (Bs)</th>
+                                    <th style="width:140px;">Subtotal (Bs)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detalleBody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="text-end mb-3">
+                        <h5>Total: <span class="text-success" id="totalVenta">Bs. 0.00</span></h5>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Estado?.MensajeError))
+                    {
+                        <div class="alert alert-danger med-alert" role="alert">
+                            @Model.Estado.MensajeError
+                        </div>
+                    }
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a asp-page="Venta" class="btn med-btn-secondary">Volver</a>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const clientes = [
+        @foreach (System.Data.DataRow row in Model.ClienteDataTable.Rows)
+        {
+                <text>
+                {
+                    id: @row["id"],
+                    nit: "@row["nit"]",
+                    razonSocial: "@row["razon_social"]"
+                },
+                </text>
+        }
+    ];
+
+    const medicamentos = [
+        @foreach (System.Data.DataRow row in Model.MedicamentoDataTable.Rows)
+        {
+                <text>
+                {
+                    id: @row["id"],
+                    nombre: "@row["nombre"]"
+                },
+                </text>
+        }
+    ];
+
+    const detalleBody = document.getElementById("detalleBody");
+    const detallesJsonInput = document.getElementById("DetallesJson");
+    const totalVentaSpan = document.getElementById("totalVenta");
+
+    const clienteBusqueda = document.getElementById("clienteBusqueda");
+    const razonSocialCliente = document.getElementById("razonSocialCliente");
+    const idClienteInput = document.getElementById("IdCliente");
+
+    function crearFila(detalle) {
+        const tr = document.createElement("tr");
+
+        const medicamento = medicamentos.find(m =>
+            Number(m.id) === Number(detalle.IdMedicamento)
+        );
+
+        const nombreMedicamento = medicamento ? medicamento.nombre : "Medicamento no encontrado";
+        const cantidad = Number(detalle.Cantidad || 0);
+        const precioUnitario = Number(detalle.PrecioUnitario || 0);
+        const subtotal = cantidad * precioUnitario;
+
+        tr.innerHTML = `
+            <td>
+                <span class="form-control-plaintext text-start px-2">${nombreMedicamento}</span>
+            </td>
+            <td>
+                <span class="detalle-cantidad form-control-plaintext text-start px-2">${cantidad}</span>
+            </td>
+            <td>
+                <span class="detalle-precio form-control-plaintext text-start px-2">${precioUnitario.toFixed(2)}</span>
+            </td>
+            <td>
+                <span class="subtotal-text text-start d-block px-2">${subtotal.toFixed(2)}</span>
+            </td>
+        `;
+
+        detalleBody.appendChild(tr);
+    }
+
+    function calcularTotal() {
+        const filas = detalleBody.querySelectorAll("tr");
+        let total = 0;
+
+        filas.forEach(tr => {
+            const cantidad = Number(tr.querySelector(".detalle-cantidad")?.textContent || 0);
+            const precioTexto = tr.querySelector(".detalle-precio")?.textContent || "0";
+            const precioUnitario = Number(precioTexto.trim() || 0);
+
+            total += cantidad * precioUnitario;
+        });
+
+        totalVentaSpan.textContent = "Bs. " + total.toFixed(2);
+    }
+
+    let detallesIniciales = [];
+
+    try {
+        detallesIniciales = JSON.parse(detallesJsonInput.value || "[]");
+    } catch {
+        detallesIniciales = [];
+    }
+
+    detallesIniciales.forEach(d => crearFila(d));
+    calcularTotal();
+
+    const clienteInicial = clientes.find(c => Number(c.id) === Number(idClienteInput.value));
+
+    if (clienteInicial) {
+        clienteBusqueda.textContent = clienteInicial.nit;
+        razonSocialCliente.textContent = clienteInicial.razonSocial;
+    }
+</script>

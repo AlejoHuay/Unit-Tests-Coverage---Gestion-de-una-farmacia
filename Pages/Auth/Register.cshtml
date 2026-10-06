@@ -1,0 +1,235 @@
+﻿@page
+@model ProyectoArqSoft.Pages.Auth.RegisterModel
+@{
+    Layout = null;
+
+    var ciBaseValue = "";
+    var ciComplementoValue = "";
+
+    if (!string.IsNullOrWhiteSpace(Model?.Registro?.Ci))
+    {
+        var partesCi = Model.Registro.Ci.Split('-');
+        ciBaseValue = partesCi.Length > 0 ? partesCi[0] : "";
+        ciComplementoValue = partesCi.Length > 1 ? partesCi[1] : "";
+    }
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Registro - Farmacia VitalCare</title>
+    <link rel="stylesheet" href="~/css/register.css" />
+    <link rel="stylesheet" href="~/css/modal.css" />
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-container">
+            <a asp-page="/Index" class="brand-link">
+                <img src="~/images/vitalcare.png" alt="VitalCare" class="brand-logo" />
+                <span class="brand-name">VitalCare</span>
+            </a>
+
+            <nav class="topbar-nav">
+                <a asp-page="/Index">Inicio</a>
+                <a asp-page="/Auth/Login">Login</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="register-page">
+        <section class="register-hero">
+            <div class="hero-left">
+                <span class="hero-badge">CREAR CUENTA</span>
+
+                <h1>Únete a<br />Farmacia VitalCare</h1>
+
+                <p>
+                    Registra un nuevo usuario dentro del sistema de gestión
+                    farmacéutica con una experiencia clara, moderna y profesional.
+                </p>
+
+                <div class="hero-note">
+                    El nombre de usuario y la contraseña se generan automáticamente
+                    al momento de registrar la cuenta.
+                </div>
+
+                <div class="hero-actions">
+                    <a asp-page="/Index" class="btn-outline-home">← Volver al inicio</a>
+                </div>
+            </div>
+
+            <div class="hero-right">
+                <div class="register-card">
+                    <div class="card-header">
+                        <h2>Formulario de registro</h2>
+                        <p>Completa los datos solicitados</p>
+                    </div>
+
+                    <form method="post" class="register-form" id="registerForm">
+                        <div class="form-grid">
+
+                            <div class="form-group">
+                                <label asp-for="Registro.Nombres">Nombres</label>
+                                <input type="text"
+                                       asp-for="Registro.Nombres"
+                                       placeholder="Ej. Juan Carlos"
+                                       required />
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Registro.ApellidoPaterno">Primer apellido</label>
+                                <input type="text"
+                                       asp-for="Registro.ApellidoPaterno"
+                                       placeholder="Ej. Pérez"
+                                       required />
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Registro.ApellidoMaterno">Segundo apellido (opcional)</label>
+                                <input type="text"
+                                       asp-for="Registro.ApellidoMaterno"
+                                       placeholder="Ej. Gutiérrez" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="CiBase">Carnet de identidad</label>
+                                <input type="text"
+                                       id="CiBase"
+                                       name="CiBase"
+                                       value="@ciBaseValue"
+                                       placeholder="Ej. 12345678"
+                                       required
+                                       maxlength="8"
+                                       pattern="\d{8}"
+                                       title="Debe ingresar 8 dígitos numéricos." />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="CiComplemento">Complemento (opcional)</label>
+                                <input type="text"
+                                       id="CiComplemento"
+                                       name="CiComplemento"
+                                       value="@ciComplementoValue"
+                                       placeholder="Ej. 1A"
+                                       maxlength="2"
+                                       pattern="[A-Za-z0-9]{0,2}"
+                                       title="Hasta 2 caracteres alfanuméricos." />
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Registro.CiExtencion">Expedido en</label>
+                                <select asp-for="Registro.CiExtencion" required>
+                                    <option value="">Seleccione</option>
+                                    <option value="BE">Beni</option>
+                                    <option value="CB">Cochabamba</option>
+                                    <option value="CH">Chuquisaca</option>
+                                    <option value="LP">La Paz</option>
+                                    <option value="OR">Oruro</option>
+                                    <option value="PD">Pando</option>
+                                    <option value="PT">Potosí</option>
+                                    <option value="SC">Santa Cruz</option>
+                                    <option value="TJ">Tarija</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Registro.Telefono">Teléfono</label>
+                                <input type="text"
+                                       asp-for="Registro.Telefono"
+                                       placeholder="Ej. 71234567"
+                                       required />
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label asp-for="Registro.Email">Correo electrónico</label>
+                                <input type="email"
+                                       asp-for="Registro.Email"
+                                       placeholder="Ej. usuario@correo.com"
+                                       required />
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Registro.UserName">Nombre de usuario generado</label>
+                                <input type="text"
+                                       asp-for="Registro.UserName"
+                                       placeholder="Se generará automáticamente"
+                                       readonly
+                                       class="readonly-field" />
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Registro.Password">Contraseña generada</label>
+                                <input type="password"
+                                       asp-for="Registro.Password"
+                                       placeholder="Se generará automáticamente"
+                                       readonly
+                                       class="readonly-field" />
+                            </div>
+                        </div>
+
+                        <input type="hidden" asp-for="Registro.Ci" id="CiCompleto" />
+
+                        @if (!string.IsNullOrWhiteSpace(Model?.MensajeOk))
+                        {
+                            <div class="alert alert-success">@Model?.MensajeOk</div>
+                        }
+
+                        <div id="errorModal" class="modal-backdrop @(string.IsNullOrWhiteSpace(Model?.MensajeError) ? string.Empty : "open")">
+                            <div class="modal-content">
+                                <h2>Error de registro</h2>
+                                <p>@Model?.MensajeError</p>
+                                <div class="modal-actions">
+                                    <button type="button" id="closeModal">Cerrar</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-register">Registrar cuenta</button>
+
+                        <div class="login-link">
+                            ¿Ya tienes cuenta?
+                            <a asp-page="/Auth/Login">Inicia sesión</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("registerForm");
+
+            form.addEventListener("submit", function () {
+                const ciBaseInput = document.getElementById("CiBase");
+                const ciComplementoInput = document.getElementById("CiComplemento");
+                const ciCompletoInput = document.getElementById("CiCompleto");
+
+                const ciBase = ciBaseInput.value.trim();
+                const ciComplemento = ciComplementoInput.value.trim().toUpperCase();
+
+                ciCompletoInput.value = ciComplemento
+                    ? `${ciBase}-${ciComplemento}`
+                    : ciBase;
+            });
+
+            const errorModal = document.getElementById("errorModal");
+            const closeModal = document.getElementById("closeModal");
+
+            if (errorModal && closeModal) {
+                closeModal.addEventListener("click", function () {
+                    errorModal.classList.remove("open");
+                });
+
+                errorModal.addEventListener("click", function (event) {
+                    if (event.target === errorModal) {
+                        errorModal.classList.remove("open");
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+﻿@page
+@model ProyectoArqSoft.Pages.Usuario.UsuarioModel
+@{
+}
+
+<div class="container mt-5">
+
+    <!-- TITULO -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-success">Personal VitalCare</h2>
+
+        <a asp-page="UsuarioCreate" class="btn-main">
+            + Nuevo Usuario
+        </a>
+    </div>
+
+    <!-- BUSCADOR -->
+    <form method="get" class="mb-4">
+        <div class="card-module p-3">
+            <div class="input-group">
+                <label for="filtroUsuario" class="visually-hidden">
+                    Buscar usuario
+                </label>
+                <input type="text"
+                       id="filtroUsuario"
+                       name="filtro"
+                       class="form-control"
+                       placeholder="Buscar por nombre, email o carnet..."
+                       value="@Model.Estado.FiltroActual" />
+
+                <button type="submit"
+                        class="btn btn-success btn-fixed">
+                    Buscar
+                </button>
+
+                <a asp-page="Usuario"
+                   class="btn btn-secondary btn-fixed">
+                    Limpiar
+                </a>
+            </div>
+        </div>
+    </form>
+
+    <!-- MENSAJES -->
+    @if (!string.IsNullOrEmpty(Model.Estado.Mensaje))
+    {
+        <div class="alert alert-success shadow-sm">@Model.Estado.Mensaje</div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.Estado.MensajeError))
+    {
+        <div class="alert alert-danger shadow-sm">@Model.Estado.MensajeError</div>
+    }
+
+    <!-- TABLA -->
+    <div class="card-module">
+        <table class="table table-hover align-middle">
+            <caption class="visually-hidden">Tabla del personal de VitalCare con nombre, email, rol, estado y acciones disponibles.</caption>
+            <thead class="table-success">
+                <tr>
+                    <th>Nombre Completo</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th style="width:170px">Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (System.Data.DataRow row in Model.UsuarioDataTable.Rows)
+                {
+                    bool esActivo = Convert.ToInt32(row["activo"]) == 1;
+                    <tr>
+                        <td class="fw-semibold">@row["nombres"] @row["apellido_paterno"] @row["apellido_materno"]</td>
+
+                        <td>@row["email"]</td>
+
+                        <td>
+                            <span class="badge border border-success text-success px-3">
+                                @row["role"]
+                            </span>
+                        </td>
+
+                        <td>
+                            @if (esActivo)
+                            {
+                                <span class="badge bg-success">ACTIVO</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">DE BAJA</span>
+                            }
+                        </td>
+
+                        <td>
+                            <!-- EDITAR -->
+                            <form method="post"
+                                  asp-page="UsuarioEdit"
+                                  asp-page-handler="CargarUsuarioParaEdicion"
+                                  style="display:inline;">
+
+                                <input type="hidden"
+                                       name="id"
+                                       value="@row["id"]" />
+
+                                <button type="submit"
+                                        class="btn btn-warning btn-sm">
+                                    Editar
+                                </button>
+                            </form>
+
+                            <!-- BOTON ELIMINAR (Solo si está activo) -->
+                            @if (esActivo)
+                            {
+                                <button type="button"
+                                        class="btn btn-danger btn-sm btnEliminar"
+                                        data-id="@row["id"]"
+                                        data-nombre="@row["user_name"]"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalEliminarUsuario">
+                                    Baja
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL CONFIRMAR ELIMINACION -->
+<div class="modal fade"
+     id="modalEliminarUsuario"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Confirmar desactivación</h5>
+                <button type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <p>¿Está seguro de que desea dar de baja al usuario?</p>
+                <p class="fw-bold" id="nombreUsuarioEliminar"></p>
+                <small class="text-muted">El usuario ya no podrá ingresar al sistema.</small>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <form method="post"
+                      asp-page-handler="EliminarUsuarioLogicamente">
+
+                    <input type="hidden"
+                           id="idUsuarioEliminar"
+                           name="id" />
+
+                    <button type="submit"
+                            class="btn btn-danger">
+                        Confirmar Baja
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const botonesEliminar = document.querySelectorAll(".btnEliminar");
+
+        botonesEliminar.forEach(boton => {
+            boton.addEventListener("click", function () {
+                const id = this.getAttribute("data-id");
+                const nombre = this.getAttribute("data-nombre");
+
+                document.getElementById("idUsuarioEliminar").value = id;
+                document.getElementById("nombreUsuarioEliminar").textContent = "Username: " + nombre;
+            });
+        });
+    });
+</script>
+

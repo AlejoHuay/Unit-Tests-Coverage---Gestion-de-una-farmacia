@@ -1,0 +1,244 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Inicio";
+}
+
+<div class="main-wrapper">
+
+    <!-- HERO -->
+    <section class="slider d-flex align-items-center">
+        <div class="container">
+            <div class="row align-items-center">
+
+                <div class="col-md-7 text-white">
+
+                    @if (Model.Usuario == null)
+                    {
+                        <span class="subhead text-uppercase">Bienvenido a</span>
+
+                        <h1 class="display-4 fw-bold mb-4">
+                            Farmacia VitalCare
+                        </h1>
+
+                        <p class="mb-4">
+                            Sistema profesional para la gestión eficiente de
+                            inventario, ventas y personal farmacéutico.
+                        </p>
+
+                        <a asp-page="/Auth/Login" class="btn-main me-3">
+                            Iniciar Sesión
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="subhead text-uppercase">Panel Administrativo</span>
+
+                        <h1 class="display-5 fw-bold mb-4">
+                            Bienvenido, <span class="text-accent">@Model.Usuario</span>
+                        </h1>
+
+                        <p>Accede rápidamente a los productos del sistema.</p>
+
+                        <a asp-page="/Medicamento/Medicamento" class="btn-main">
+                            Ir a los medicamentos
+                        </a>
+                    }
+
+                </div>
+
+                <div class="col-md-5 text-center">
+                    <img src="~/images/vitalcare.png"
+                         alt="Logotipo de VitalCare"
+                         class="img-fluid"
+                         style="max-height:250px;" />
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- SECCIÓN INSTITUCIONAL -->
+    <section class="section bg-light text-center">
+        <div class="container">
+            <h2 class="mb-3">Comprometidos con la Salud</h2>
+            <p class="text-muted mb-5">
+                VitalCare proporciona herramientas modernas para optimizar
+                los procesos farmacéuticos y garantizar una atención segura.
+            </p>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <h4 class="text-success">
+                        <i class="bi bi-shield-lock-fill"></i> Seguridad
+                    </h4>
+                    <p>Control de accesos y protección de datos.</p>
+                </div>
+                <div class="col-md-4">
+                    <h4 class="text-success">
+                        <i class="bi bi-lightning-charge-fill"></i> Eficiencia
+                    </h4>
+
+                    <p>Gestión rápida y ordenada de inventario.</p>
+                </div>
+                <div class="col-md-4">
+                    <h4 class="text-success">
+                        <i class="bi bi-heart-pulse-fill"></i> Confianza
+                    </h4>
+
+                    <p>Registro transparente de cada transacción.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @if (Model.MedicamentoDataTable.Rows.Count > 0)
+    {
+        <section class="section">
+            <div class="container">
+
+                <h3 class="mb-4 text-success fw-bold text-center">
+                    Medicamentos Destacados
+                </h3>
+
+                <div class="row g-4">
+
+                    @foreach (System.Data.DataRow row in Model.MedicamentoDataTable.Rows)
+                    {
+                        <div class="col-md-4">
+
+                            <a asp-page="@(Model.Usuario != null ? "/Medicamento/Medicamento" : "/Auth/Login")"
+                               class="text-decoration-none">
+
+                                <div class="med-card">
+
+                                    <div class="med-icon">
+                                        <i class="bi bi-capsule-pill"></i>
+                                    </div>
+
+
+                                    <h5 class="med-title">
+                                        @row["nombre"]
+                                    </h5>
+
+                                    <p class="med-info">
+                                        <strong>Presentación:</strong> @row["presentacion"]
+                                    </p>
+
+                                    <p class="med-info">
+                                        <strong>Clasificación:</strong> @row["clasificacion"]
+                                    </p>
+
+                                    <p class="med-info">
+                                        <strong>Concentración:</strong> @row["concentracion"]
+                                    </p>
+
+                                    <div class="med-price">
+                                        Bs. @row["precio"]
+                                    </div>
+
+                                </div>
+
+                            </a>
+
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+        </section>
+    }
+
+    @if (Model.Usuario != null)
+    {
+        <!-- MÓDULOS -->
+        <section class="section text-center">
+            <div class="container">
+                <h2 class="mb-5">Módulos del Sistema</h2>
+
+                <div class="row">
+
+                    <div class="col-lg-4">
+                        <div class="card-module">
+                            <h3><i class="bi bi-capsule"></i> Medicamentos</h3>
+                            <p>Administración completa del inventario de medicamentos.</p>
+                            <a asp-page="/Medicamento/Medicamento">Entrar</a>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card-module">
+                            <h3><i class="bi bi-people-fill"></i> Clientes</h3>
+                            <p>Gestión y registro de clientes de la farmacia.</p>
+                            <a asp-page="/Cliente/Cliente">Entrar</a>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card-module">
+                            <h3><i class="bi bi-person-badge-fill"></i> Bioquímicos</h3>
+                            <p>Administración del personal bioquímico autorizado.</p>
+                            <a asp-page="/Bioquimico/Bioquimico">Entrar</a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    }
+
+    <!-- ESTADÍSTICAS -->
+    <section class="stats-section">
+        <div class="container">
+            <h2 class="mb-5 text-center">Estadisticas del Sistema</h2>
+            <div class="row text-center g-4">
+
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="bi bi-capsule-pill"></i>
+                        </div>
+                        <h2>@Model.TotalFarmacia.TotalMedicamentos</h2>
+                        <p>Medicamentos</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <h2>@Model.TotalFarmacia.TotalClientes</h2>
+                        <p>Clientes</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+                        <h2>@Model.TotalFarmacia.TotalUsuarios</h2>
+                        <p>Usuarios</p>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="bi bi-cart-check-fill"></i>
+                        </div>
+                        <h2>@Model.TotalFarmacia.TotalVentas</h2>
+                        <p>Ventas Registradas</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    

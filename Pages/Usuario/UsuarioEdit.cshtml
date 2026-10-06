@@ -1,0 +1,85 @@
+﻿@page
+@model ProyectoArqSoft.Pages.Usuario.UsuarioEditModel
+
+<div class="container py-5 medicamento-form-page">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-7">
+
+            <div class="med-card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+                <div class="med-card-header text-center bg-success text-white py-3">
+                    <h2 class="mb-0 fw-bold text-white">
+                        Editar Perfil de Usuario
+                    </h2>
+                    <p class="mb-0 small">ID Sistema: #@Model.Input.IdUsuario</p>
+                </div>
+
+                <div class="med-card-body p-4 pt-4">
+                    <form method="post" asp-page-handler="ActualizarUsuario">
+                        <input type="hidden" asp-for="Input.IdUsuario" />
+
+                        <!-- CORREO ELECTRÓNICO -->
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Email"
+                            id="Input_Email"
+                            class="form-control med-input" 
+                            placeholder="Email" 
+                            required />
+                            <label asp-for="Input.Email"
+                                   for="Input_Email"
+                                   class="ms-2">
+                                  Correo Electrónico
+                            </label>
+                        </div>
+
+                        <!-- ELIMINADO: NOMBRES (Ya no es parte del formulario) -->
+
+                        <!-- ROL / PRIVILEGIOS -->
+                        <div class="form-floating mb-3">
+                            <select asp-for="Input.Role" 
+                                    id="Input_Role"
+                                    class="form-select med-input">
+                                <option value="Admin">Administrador</option>
+                                <option value="Bioquimico">Bioquímico</option>
+                            </select>
+                            <label asp-for="Input.Role"
+                                   for="Input_Role"
+                                   class="ms-2">
+                                  Rol / Privilegios
+                            </label>
+                        </div>
+
+                        <!-- ESTADO DE CUENTA -->
+                        <div class="form-floating mb-4">
+                            <select asp-for="Input.Activo"
+                                    id="Input_Activo"
+                                    class="form-select med-input">
+                                <option value="1">Habilitado</option>
+                                <option value="0">Deshabilitado (Baja)</option>
+                            </select>
+                            <label asp-for="Input.Activo"
+                                   for="Input_Activo"
+                                   class="ms-2">
+                                  Estado de Cuenta
+                            </label>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Estado.MensajeError))
+                        {
+                            <div class="alert alert-danger med-alert border-0 shadow-sm mb-4">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i> @Model.Estado.MensajeError
+                            </div>
+                        }
+
+                        <div class="d-flex justify-content-end gap-2 mt-2 pt-3 border-top">
+                            <a asp-page="Usuario" class="btn btn-secondary px-4">Cancelar</a>
+                            <button type="submit" class="btn btn-success px-5 fw-bold shadow-sm" style="background-color: #198754;">
+                                Actualizar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

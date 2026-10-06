@@ -1,0 +1,789 @@
+@page
+@model ProyectoArqSoft.Pages.VentaCreateModel
+
+@{
+    ViewData["Title"] = "Registro de Venta";
+}
+
+<div class="container py-5">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h3 class="mb-0">Nueva Venta</h3>
+        </div>
+
+        <div class="card-body">
+            <form method="post" asp-page-handler="CrearVenta" id="ventaCreateForm">
+                <input type="hidden" asp-for="DetallesJson" id="DetallesJson" />
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label for="clienteBusqueda"
+                                 class="form-label fw-bold">
+                             Cliente (NIT)
+                        </label>
+
+                        <div class="busqueda-container">
+                            <input type="text"
+                                   id="clienteBusqueda"
+                                   class="form-control"
+                                   placeholder="Buscar por NIT..." />
+
+                            <div id="clienteResultados" class="list-group resultados-dropdown"></div>
+                        </div>
+
+
+                        <div class="d-flex gap-2 mt-2">
+                            <button type="button"
+                                    class="btn btn-outline-success btn-sm"
+                                    id="btnAgregarCliente"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#clienteModal">
+                                Agregar Cliente
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    id="btnConsumidorFinal">
+                                Consumidor Final
+                            </button>
+                        </div>
+
+                        <label for="razonSocialCliente"
+                                 class="form-label fw-bold mt-2">
+                             Cliente:
+                        </label>
+                        <input type="text"
+                               id="razonSocialCliente"
+                               class="form-control"
+                               placeholder="Razon social del cliente"
+                               readonly />
+
+                        <input type="hidden"
+                               asp-for="IdCliente"
+                               id="IdCliente" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="MetodoPago" class="form-label fw-bold"></label>
+                        <select asp-for="MetodoPago" class="form-select" required>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Tarjeta">Tarjeta</option>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="QR">QR</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="mb-3">
+                    <h5>Detalle</h5>
+                </div>
+
+                <div class="busqueda-container">
+                    <div class="input-group">
+                        <label for="medicamentoBusquedaGlobal" class="visually-hidden">
+                            Buscar medicamento
+                        </label>
+                        <input type="text"
+                               id="medicamentoBusquedaGlobal"
+                               class="form-control"
+                               placeholder="Buscar medicamento" />
+                        <button type="button"
+                                class="btn btn-success"
+                                id="btnAgregarDetalle">
+                            Agregar
+                        </button>
+                    </div>
+
+                    <div id="medicamentoResultadosGlobal" class="list-group resultados-dropdown"></div>
+                </div>
+
+
+                <table class="table table-bordered" id="tablaDetalles">
+                    <thead class="table-success">
+                        <tr>
+                            <th>Medicamento</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unitario</th>
+                            <th>Importe</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="detalleBody"></tbody>
+                </table>
+
+                <div class="text-end mb-3">
+                    <h5>Total: <span id="totalVenta">Bs. 0.00</span></h5>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Estado.MensajeError))
+                {
+                    <div class="alert alert-danger" id="ventaMensajeError">
+                        @Model.Estado.MensajeError
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-danger d-none" id="ventaMensajeError"></div>
+                }
+
+                <div class="text-end">
+                    <!-- Cambio: Se cambi� btn-primary a btn-success para que coincida con "Agregar" -->
+                    <button type="button"
+                            class="btn btn-success"
+                            id="btnGuardarVenta">
+                        Guardar Venta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalConfirmarVenta" tabindex="-1" aria-labelledby="modalConfirmarVentaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="modalConfirmarVentaLabel">Confirmar venta</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                Esta seguro de registrar esta venta y generar el comprobante PDF?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btnConfirmarVentaModal">Si, guardar venta</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="clienteModal" tabindex="-1" aria-labelledby="clienteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="clienteModalForm">
+                @Html.AntiForgeryToken()
+
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="clienteModalLabel">Agregar Cliente</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="alert alert-danger d-none" id="clienteModalError"></div>
+                    <div class="alert alert-success d-none" id="clienteModalOk"></div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold" for="ClienteModalNit">NIT / CI</label>
+                        <input class="form-control" id="ClienteModalNit" name="ClienteModalNit" maxlength="20" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold" for="ClienteModalRazonSocial">Razon Social</label>
+                        <input class="form-control" id="ClienteModalRazonSocial" name="ClienteModalRazonSocial" maxlength="45" required>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label fw-bold" for="ClienteModalCorreoElectronico">Correo Electronico</label>
+                        <input class="form-control" id="ClienteModalCorreoElectronico" name="ClienteModalCorreoElectronico" type="email" maxlength="45">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success" id="btnGuardarClienteModal">Guardar Cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const clientes = [
+            @foreach (System.Data.DataRow row in Model.ClienteDataTable.Rows)
+            {
+                        <text>
+                        {
+                            id: @row["id"],
+                            nit: "@row["nit"]",
+                            razonSocial: "@row["razon_social"]"
+                        },
+                        </text>
+            }
+        ];
+
+        const medicamentos = [
+            @foreach (System.Data.DataRow row in Model.MedicamentoDataTable.Rows)
+            {
+                        <text>
+                        {
+                            id: @row["id"],
+                            nombre: "@row["nombre"]",
+                            precio: @(Convert.ToDecimal(row["precio"]).ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                            stock: @(Convert.ToInt32(row["stock"]))
+                        },
+                        </text>
+            }
+        ];
+    </script>
+
+    <script>
+        const detalleBody = document.getElementById("detalleBody");
+        const detallesJsonInput = document.getElementById("DetallesJson");
+        const totalVentaSpan = document.getElementById("totalVenta");
+        const ventaMensajeError = document.getElementById("ventaMensajeError");
+        const medicamentoBusquedaGlobal = document.getElementById("medicamentoBusquedaGlobal");
+        const medicamentoResultadosGlobal = document.getElementById("medicamentoResultadosGlobal");
+        let medicamentoSeleccionado = null;
+
+        function mostrarErrorVenta(mensaje) {
+            ventaMensajeError.textContent = mensaje;
+            ventaMensajeError.dataset.source = "client";
+            ventaMensajeError.classList.remove("d-none");
+        }
+
+        function limpiarErrorVenta() {
+            if (ventaMensajeError.dataset.source !== "client") return;
+            ventaMensajeError.textContent = "";
+            ventaMensajeError.classList.add("d-none");
+        }
+
+        async function actualizarMedicamentoDesdeBackend(idMedicamento) {
+            const response = await fetch(`${window.location.pathname}?handler=MedicamentoStock&id=${idMedicamento}`, {
+                method: "GET",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || "No se pudo obtener el stock actual del medicamento.");
+            }
+
+            const medicamentoActualizado = data.medicamento;
+            const medicamentoLocal = medicamentos.find(m => Number(m.id) === Number(idMedicamento));
+
+            if (medicamentoLocal) {
+                medicamentoLocal.nombre = medicamentoActualizado.nombre;
+                medicamentoLocal.precio = Number(medicamentoActualizado.precio);
+                medicamentoLocal.stock = Number(medicamentoActualizado.stock);
+            }
+
+            return medicamentoLocal || {
+                id: medicamentoActualizado.id,
+                nombre: medicamentoActualizado.nombre,
+                precio: Number(medicamentoActualizado.precio),
+                stock: Number(medicamentoActualizado.stock)
+            };
+        }
+
+        function formatearMoneda(valor) {
+            return "Bs. " + Number(valor || 0).toFixed(2);
+        }
+
+        function obtenerPrecioFila(tr) {
+            const precioInput = tr.querySelector(".precio-input");
+            return Number(precioInput.dataset.precio || 0);
+        }
+
+        function crearFila(medicamento, cantidadInicial = 1) {
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+                <td>
+                    <input type="text"
+                           class="form-control medicamento-nombre"
+                           placeholder="Seleccionado"
+                           readonly>
+                    <input type="hidden" class="medicamento-id">
+                </td>
+                <td>
+                    <input type="number"
+                           min="1"
+                           class="form-control cantidad-input"
+                           value="1">
+                </td>
+                <td>
+                    <input type="text"
+                           class="form-control precio-input bg-light"
+                           value="Bs. 0.00"
+                           readonly
+                           style="pointer-events:none;">
+                </td>
+                <td>
+                    <span class="subtotal-text">Bs. 0.00</span>
+                </td>
+                <td>
+                    <button type="button"
+                            class="btn btn-danger btnEliminarFila">
+                        X
+                    </button>
+                </td>
+            `;
+
+            detalleBody.appendChild(tr);
+
+            const nombre = tr.querySelector(".medicamento-nombre");
+            const hiddenId = tr.querySelector(".medicamento-id");
+            const cantidad = tr.querySelector(".cantidad-input");
+            const precio = tr.querySelector(".precio-input");
+
+            nombre.value = medicamento.nombre;
+            hiddenId.value = medicamento.id;
+            precio.dataset.precio = Number(medicamento.precio);
+            precio.value = formatearMoneda(medicamento.precio);
+            cantidad.value = cantidadInicial || 1;
+            cantidad.max = medicamento.stock;
+
+            cantidad.addEventListener("input", () => recalcularFila(tr));
+
+            tr.querySelector(".btnEliminarFila")
+                .addEventListener("click", function () {
+                    tr.remove();
+                    sincronizarJson();
+                });
+
+            recalcularFila(tr);
+        }
+
+        async function seleccionarMedicamentoGlobal(med) {
+            try {
+                medicamentoSeleccionado = await actualizarMedicamentoDesdeBackend(med.id);
+                medicamentoBusquedaGlobal.value = medicamentoSeleccionado.nombre;
+                medicamentoResultadosGlobal.innerHTML = "";
+                limpiarErrorVenta();
+            } catch (error) {
+                medicamentoSeleccionado = null;
+                mostrarErrorVenta(error.message);
+            }
+        }
+
+        function agregarMedicamentoSeleccionado() {
+            if (!medicamentoSeleccionado) {
+                medicamentoBusquedaGlobal.focus();
+                return;
+            }
+
+            const filaExistente = Array.from(detalleBody.querySelectorAll("tr"))
+                .find(tr => Number(tr.querySelector(".medicamento-id").value || 0) === Number(medicamentoSeleccionado.id));
+
+            if (filaExistente) {
+                const cantidadInput = filaExistente.querySelector(".cantidad-input");
+                cantidadInput.value = Number(cantidadInput.value || 0) + 1;
+                recalcularFila(filaExistente);
+            } else {
+                crearFila(medicamentoSeleccionado);
+            }
+
+            medicamentoSeleccionado = null;
+            medicamentoBusquedaGlobal.value = "";
+            medicamentoResultadosGlobal.innerHTML = "";
+        }
+
+        medicamentoBusquedaGlobal.addEventListener("input", function () {
+            const texto = this.value.toLowerCase().trim();
+            medicamentoSeleccionado = null;
+            medicamentoResultadosGlobal.innerHTML = "";
+
+            if (texto.length < 3) return;
+
+            const filtrados = medicamentos.filter(m =>
+                m.nombre.toLowerCase().includes(texto)
+            );
+
+            filtrados.forEach(med => {
+                const item = document.createElement("button");
+                item.type = "button";
+                item.className = "list-group-item list-group-item-action";
+                item.textContent = med.nombre;
+                item.onclick = () => seleccionarMedicamentoGlobal(med);
+
+                medicamentoResultadosGlobal.appendChild(item);
+            });
+        });
+
+        medicamentoBusquedaGlobal.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+
+                if (medicamentoSeleccionado) {
+                    agregarMedicamentoSeleccionado();
+                    return;
+                }
+
+                const primerResultado = medicamentoResultadosGlobal.querySelector("button");
+                if (primerResultado) {
+                    primerResultado.click();
+                }
+            }
+        });
+
+        function recalcularFila(tr) {
+            const cantidad = Number(
+                tr.querySelector(".cantidad-input").value || 0
+            );
+
+            const precio = obtenerPrecioFila(tr);
+
+            const idMedicamento = Number(tr.querySelector(".medicamento-id").value || 0);
+            const medicamento = medicamentos.find(m => Number(m.id) === idMedicamento);
+
+            if (medicamento && cantidad > medicamento.stock) {
+                tr.querySelector(".cantidad-input").classList.add("is-invalid");
+                mostrarErrorVenta(`Stock insuficiente para ${medicamento.nombre}. Disponible: ${medicamento.stock}.`);
+            } else {
+                tr.querySelector(".cantidad-input").classList.remove("is-invalid");
+                if (validarStockGlobal(false)) {
+                    limpiarErrorVenta();
+                }
+            }
+
+            const subtotal = cantidad * precio;
+            tr.querySelector(".subtotal-text").textContent = formatearMoneda(subtotal);
+
+            sincronizarJson();
+        }
+
+        function sincronizarJson() {
+            const filas = detalleBody.querySelectorAll("tr");
+            const detalles = [];
+            let total = 0;
+
+            filas.forEach(tr => {
+                const idMedicamento = Number(
+                    tr.querySelector(".medicamento-id").value || 0
+                );
+
+                const cantidad = Number(
+                    tr.querySelector(".cantidad-input").value || 0
+                );
+
+                const precio = obtenerPrecioFila(tr);
+
+                if (idMedicamento > 0) {
+                    detalles.push({
+                        IdMedicamento: idMedicamento,
+                        Cantidad: cantidad
+                    });
+
+                    total += cantidad * precio;
+                }
+            });
+
+            detallesJsonInput.value = JSON.stringify(detalles);
+            totalVentaSpan.textContent = "Bs. " + total.toFixed(2);
+        }
+
+        function validarStockGlobal(mostrarMensaje = true) {
+            const acumulado = {};
+
+            detalleBody.querySelectorAll("tr").forEach(tr => {
+                const idMedicamento = Number(tr.querySelector(".medicamento-id").value || 0);
+                const cantidad = Number(tr.querySelector(".cantidad-input").value || 0);
+
+                if (idMedicamento > 0) {
+                    acumulado[idMedicamento] = (acumulado[idMedicamento] || 0) + cantidad;
+                }
+            });
+
+            for (const id in acumulado) {
+                const med = medicamentos.find(m => Number(m.id) === Number(id));
+                if (med && acumulado[id] > med.stock) {
+                    if (mostrarMensaje) {
+                        mostrarErrorVenta(`Stock insuficiente para ${med.nombre}. Disponible: ${med.stock}.`);
+                    }
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        async function validarStockActualBackend() {
+            const idsMedicamentos = Array.from(detalleBody.querySelectorAll(".medicamento-id"))
+                .map(input => Number(input.value || 0))
+                .filter(id => id > 0);
+
+            const idsUnicos = [...new Set(idsMedicamentos)];
+
+            for (const id of idsUnicos) {
+                await actualizarMedicamentoDesdeBackend(id);
+            }
+
+            detalleBody.querySelectorAll("tr").forEach(tr => {
+                const idMedicamento = Number(tr.querySelector(".medicamento-id").value || 0);
+                const medicamento = medicamentos.find(m => Number(m.id) === idMedicamento);
+
+                if (medicamento) {
+                    const precioInput = tr.querySelector(".precio-input");
+                    precioInput.dataset.precio = Number(medicamento.precio);
+                    precioInput.value = formatearMoneda(medicamento.precio);
+                    tr.querySelector(".cantidad-input").max = medicamento.stock;
+                    recalcularFila(tr);
+                }
+            });
+
+            return validarStockGlobal(true);
+        }
+
+        document.getElementById("btnAgregarDetalle")
+            .addEventListener("click", agregarMedicamentoSeleccionado);
+
+        const formVenta = document.getElementById("ventaCreateForm");
+        const btnGuardarVenta = document.getElementById("btnGuardarVenta");
+        const btnConfirmarVentaModal = document.getElementById("btnConfirmarVentaModal");
+        const modalConfirmarVenta = new bootstrap.Modal(document.getElementById("modalConfirmarVenta"));
+
+        btnGuardarVenta.addEventListener("click", async function () {
+            sincronizarJson();
+
+            const idCliente = document.getElementById("IdCliente").value;
+            const metodoPago = document.querySelector('[name="MetodoPago"]').value;
+            const detalles = detallesJsonInput.value;
+
+            if (!idCliente || Number(idCliente) <= 0) {
+                mostrarErrorVenta("Debe seleccionar un cliente valido.");
+                return;
+            }
+
+            if (!metodoPago || metodoPago.trim() === "") {
+                mostrarErrorVenta("Debe seleccionar un metodo de pago.");
+                return;
+            }
+
+            if (!detalles || detalles === "[]" || detalles.trim() === "") {
+                mostrarErrorVenta("Debe agregar al menos un medicamento.");
+                return;
+            }
+
+            try {
+                const stockValido = await validarStockActualBackend();
+                sincronizarJson();
+
+                if (!stockValido) {
+                    return;
+                }
+
+                modalConfirmarVenta.show();
+            } catch (error) {
+                mostrarErrorVenta(error.message);
+            }
+        });
+btnConfirmarVentaModal.addEventListener("click", async function () {
+    const pestañaPdf = window.open("about:blank", "_blank");
+
+    try {
+        sincronizarJson();
+        modalConfirmarVenta.hide();
+        btnConfirmarVentaModal.disabled = true;
+        btnConfirmarVentaModal.textContent = "Guardando...";
+
+        const formData = new FormData(formVenta);
+
+        const response = await fetch(formVenta.action || (window.location.pathname + "?handler=CrearVenta"), {
+            method: "POST",
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error("Error al registrar la venta");
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        if (pestañaPdf) {
+            pestañaPdf.location.href = url;
+        } else {
+            mostrarErrorVenta("El navegador bloqueó la nueva pestaña. Permite ventanas emergentes.");
+            btnConfirmarVentaModal.disabled = false;
+            btnConfirmarVentaModal.textContent = "Si, guardar venta";
+            return;
+        }
+
+        const mensaje = response.headers.get("X-Mensaje-Exito") || "Venta registrada correctamente.";
+        const redirectTo = response.headers.get("X-Redirect-To") || "/Venta/Venta?mensaje=" + encodeURIComponent(mensaje);
+
+        setTimeout(() => {
+            window.location.href = redirectTo;
+        }, 1000);
+    }
+    catch (error) {
+        if (pestañaPdf) {
+            pestañaPdf.close();
+        }
+
+        mostrarErrorVenta("Ocurrio un error al registrar la venta.");
+        console.error(error);
+        btnConfirmarVentaModal.disabled = false;
+        btnConfirmarVentaModal.textContent = "Si, guardar venta";
+    }
+});
+
+        let detallesIniciales = [];
+        try {
+            detallesIniciales = JSON.parse(detallesJsonInput.value || "[]");
+        } catch {
+            detallesIniciales = [];
+        }
+
+        if (detallesIniciales.length > 0) {
+            detallesIniciales.forEach(detalle => {
+                const med = medicamentos.find(m => Number(m.id) === Number(detalle.IdMedicamento));
+                if (med) {
+                    crearFila(med, detalle.Cantidad || 1);
+                }
+            });
+        }
+    </script>
+
+    <script>
+        const clienteBusqueda = document.getElementById("clienteBusqueda");
+        const clienteResultados = document.getElementById("clienteResultados");
+        const razonSocialCliente = document.getElementById("razonSocialCliente");
+        const idClienteInput = document.getElementById("IdCliente");
+        const clienteModalElement = document.getElementById("clienteModal");
+        const clienteModal = bootstrap.Modal.getOrCreateInstance(clienteModalElement);
+        const clienteModalForm = document.getElementById("clienteModalForm");
+        const clienteModalError = document.getElementById("clienteModalError");
+        const clienteModalOk = document.getElementById("clienteModalOk");
+
+        clienteBusqueda.addEventListener("input", function () {
+            const texto = this.value.toLowerCase().trim();
+            clienteResultados.innerHTML = "";
+
+            if (texto.length < 3) return;
+
+            const filtrados = clientes.filter(c =>
+                c.nit.toLowerCase().includes(texto)
+            );
+
+            filtrados.forEach(cliente => {
+                const item = document.createElement("button");
+                item.type = "button";
+                item.className = "list-group-item list-group-item-action";
+                item.textContent = `${cliente.nit} - ${cliente.razonSocial}`;
+                item.onclick = function () {
+                    seleccionarCliente(cliente);
+                };
+
+                clienteResultados.appendChild(item);
+            });
+        });
+
+        function seleccionarCliente(cliente) {
+            clienteBusqueda.value = cliente.nit;
+            razonSocialCliente.value = cliente.razonSocial;
+            idClienteInput.value = cliente.id;
+            clienteResultados.innerHTML = "";
+        }
+
+        clienteBusqueda.addEventListener("blur", function () {
+            if (this.value.trim() === "") {
+                razonSocialCliente.value = "";
+                idClienteInput.value = "";
+                clienteResultados.innerHTML = "";
+            }
+        });
+
+        function limpiarModalCliente() {
+            clienteModalForm.reset();
+            clienteModalError.classList.add("d-none");
+            clienteModalOk.classList.add("d-none");
+            clienteModalError.textContent = "";
+            clienteModalOk.textContent = "";
+        }
+
+        clienteModalElement.addEventListener("hidden.bs.modal", limpiarModalCliente);
+
+        async function guardarClienteModal(esConsumidorFinalRapido = false) {
+            const formData = new FormData(clienteModalForm);
+
+            if (esConsumidorFinalRapido) {
+                formData.set("ClienteModalEsConsumidorFinal", "true");
+                formData.set("ClienteModalNit", "CF");
+                formData.set("ClienteModalRazonSocial", "Consumidor Final");
+                formData.set("ClienteModalCorreoElectronico", "");
+            } else {
+                formData.set("ClienteModalEsConsumidorFinal", "false");
+            }
+
+            const response = await fetch(`${window.location.pathname}?handler=CrearClienteModal`, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || "No se pudo registrar el cliente.");
+            }
+
+            const cliente = {
+                id: data.cliente.id,
+                nit: data.cliente.nit,
+                razonSocial: data.cliente.razonSocial
+            };
+
+            if (!clientes.some(c => Number(c.id) === Number(cliente.id))) {
+                clientes.push(cliente);
+            }
+
+            seleccionarCliente(cliente);
+            return cliente;
+        }
+
+        clienteModalForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            clienteModalError.classList.add("d-none");
+            clienteModalOk.classList.add("d-none");
+
+            try {
+                await guardarClienteModal(false);
+                clienteModalOk.textContent = "Cliente registrado correctamente.";
+                clienteModalOk.classList.remove("d-none");
+                setTimeout(() => clienteModal.hide(), 350);
+            } catch (error) {
+                clienteModalError.textContent = error.message;
+                clienteModalError.classList.remove("d-none");
+            }
+        });
+
+        document.getElementById("btnConsumidorFinal").addEventListener("click", async function () {
+            const existente = clientes.find(c => c.nit.toLowerCase() === "cf");
+
+            if (existente) {
+                seleccionarCliente(existente);
+                return;
+            }
+
+            try {
+                await guardarClienteModal(true);
+            } catch (error) {
+                mostrarErrorVenta(error.message);
+            }
+        });
+
+        const clienteInicial = clientes.find(c => Number(c.id) === Number(idClienteInput.value));
+        if (clienteInicial) {
+            seleccionarCliente(clienteInicial);
+        }
+
+        document.addEventListener("click", function (e) {
+            if (!e.target.closest(".busqueda-container")) {
+                clienteResultados.innerHTML = "";
+                medicamentoResultadosGlobal.innerHTML = "";
+            }
+        });
+
+
+    </script>
+}

@@ -1,0 +1,117 @@
+@page
+@model ProyectoArqSoft.Pages.Bioquimico.BioquimicoCreateModel
+@{
+    ViewData["Title"] = "Nuevo Bioquímico - VitalCare";
+}
+
+<div class="container py-5 medicamento-form-page">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <!-- Añadido border-0, border-radius y overflow hidden -->
+            <div class="med-card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+
+                <!-- ENCABEZADO VERDE IGUAL AL REGISTRO -->
+                <div class="med-card-header text-center bg-success text-white py-3">
+                    <h2 class="mb-0 fw-bold text-white">Nuevo Bioquímico</h2>
+                    <p class="mb-0 small">Registra al bioquímico con los datos base del sistema</p>
+                </div>
+
+                <div class="med-card-body p-4">
+                    <form method="post">
+                        <div class="form-floating mb-3">
+                            <input asp-for="Registro.Nombres" id="Registro_Nombres" class="form-control med-input" placeholder="Nombres" />
+                            <label asp-for="Registro.Nombres" for="Registro_Nombres" class="ms-2">Nombres</label>
+                            <span asp-validation-for="Registro.Nombres" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    <input asp-for="Registro.ApellidoPaterno" id="Registro_ApellidoPaterno" class="form-control med-input" placeholder="Primer apellido" />
+                                    <label asp-for="Registro.ApellidoPaterno" for="Registro_ApellidoPaterno" class="ms-2">Primer apellido</label>
+                                    <span asp-validation-for="Registro.ApellidoPaterno" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    <input asp-for="Registro.ApellidoMaterno" id="Registro_ApellidoMaterno" class="form-control med-input" placeholder="Segundo apellido" />
+                                    <label asp-for="Registro.ApellidoMaterno" for="Registro_ApellidoMaterno" class="ms-2">Segundo apellido (opcional)</label>
+                                    <span asp-validation-for="Registro.ApellidoMaterno" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    <input asp-for="Registro.Ci" id="Registro_Ci" class="form-control med-input" placeholder="Carnet de identidad" />
+                                    <label asp-for="Registro.Ci" for="Registro_Ci" class="ms-2">Carnet de identidad</label>
+                                    <span asp-validation-for="Registro.Ci" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <div class="form-floating">
+                                    <input asp-for="CiComplemento" id="CiComplemento" class="form-control med-input" placeholder="Complemento" maxlength="2" />
+                                    <label asp-for="CiComplemento" for="CiComplemento" class="ms-2">Compl.</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <div class="form-floating">
+                                    <select asp-for="Registro.CiExtencion" id="Registro_CiExtencion" class="form-select med-input">
+                                        <option value="">Seleccione</option>
+                                        <option value="BE">Beni</option>
+                                        <option value="CB">Cochabamba</option>
+                                        <option value="CH">Chuquisaca</option>
+                                        <option value="LP">La Paz</option>
+                                        <option value="OR">Oruro</option>
+                                        <option value="PD">Pando</option>
+                                        <option value="PT">Potosí</option>
+                                        <option value="SC">Santa Cruz</option>
+                                        <option value="TJ">Tarija</option>
+                                    </select>
+                                    <label asp-for="Registro.CiExtencion" for="Registro_CiExtencion" class="ms-2">Expedido</label>
+                                    <span asp-validation-for="Registro.CiExtencion" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Registro.Telefono" id="Registro_Telefono" class="form-control med-input" placeholder="Teléfono" />
+                            <label asp-for="Registro.Telefono" for="Registro_Telefono" class="ms-2">Teléfono</label>
+                            <span asp-validation-for="Registro.Telefono" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Registro.Email" id="Registro_Email" type="email" class="form-control med-input" placeholder="Correo electrónico" />
+                            <label asp-for="Registro.Email" for="Registro_Email" class="ms-2">Correo electrónico</label>
+                            <span asp-validation-for="Registro.Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i> El usuario y contraseña se generarán automáticamente.
+                            </small>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.MensajeError))
+                        {
+                            <div class="alert alert-danger shadow-sm border-0">
+                                @Model.MensajeError
+                            </div>
+                        }
+
+                        <div class="d-flex justify-content-end gap-2 mt-4 border-top pt-3">
+                            <a asp-page="Bioquimico" class="btn btn-secondary px-4">Cancelar</a>
+                            <button type="submit" class="btn btn-success px-5 fw-bold shadow-sm" style="background-color: #198754;">
+                                Guardar Registro
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

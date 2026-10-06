@@ -1,0 +1,109 @@
+@page
+@model ProyectoArqSoft.Pages.ClienteCreateModel
+
+<div class="container py-5 medicamento-form-page">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+
+            <div class="med-card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+                <!-- ENCABEZADO VERDE ESTILO REGISTRO -->
+                <div class="med-card-header text-center bg-success text-white py-3">
+                    <h2 class="mb-0 fw-bold text-white">Nuevo Cliente</h2>
+                    <p class="mb-0 small">Completa los datos para registrar un cliente</p>
+                </div>
+
+                <div class="med-card-body p-4">
+                    <form method="post" asp-page-handler="CrearCliente">
+
+                        <fieldset class="mb-4">
+                            <legend class="form-label fw-bold small text-muted d-block mb-3">Tipo de registro</legend>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="border rounded-4 p-3 w-100 h-100 bg-white shadow-sm" for="tipoClienteFormal" style="cursor:pointer;">
+                                        <input asp-for="EsConsumidorFinal" id="tipoClienteFormal" type="radio" value="false" class="form-check-input me-2" />
+                                        <span class="fw-semibold d-block mb-1">Cliente con datos fiscales</span>
+                                        <span class="text-muted small">Registra NIT, razón social y correo electrónico.</span>
+                                    </label>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="border rounded-4 p-3 w-100 h-100 bg-light shadow-sm" for="tipoConsumidorFinal" style="cursor:pointer;">
+                                        <input asp-for="EsConsumidorFinal" id="tipoConsumidorFinal" type="radio" value="true" class="form-check-input me-2" />
+                                        <span class="fw-semibold d-block mb-1">Consumidor Final</span>
+                                        <span class="text-muted small">NIT = CF y razón social = Consumidor Final.</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <div id="bloqueConsumidorFinal" class="alert alert-success border-0 shadow-sm mb-4" style="display:none;">
+                            <i class="bi bi-info-circle-fill me-2"></i> Se registrará la venta como <strong>Consumidor Final</strong>.
+                        </div>
+
+                        <div id="datosClienteFiscal">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Nit" id="Nit" class="form-control med-input" placeholder="NIT" inputmode="numeric" />
+                                <label asp-for="Nit" for="Nit" class="ms-2">NIT / CI</label>
+                            </div>
+
+                            <div class="form-floating mb-3">
+                                <input asp-for="RazonSocial" id="RazonSocial" class="form-control med-input" placeholder="Razon Social" minlength="3" maxlength="45" required />
+                                <label asp-for="RazonSocial" for="RazonSocial" class="ms-2">Razón Social / Nombre Completo</label>
+                            </div>
+
+                            <div id="correoElectronicoGroup" class="form-floating mb-3">
+                                <input asp-for="CorreoElectronico" id="CorreoElectronico" type="email" class="form-control med-input" placeholder="Correo Electronico" maxlength="45" />
+                                <label asp-for="CorreoElectronico" for="CorreoElectronico" class="ms-2">Correo Electrónico (Para factura)</label>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Estado.MensajeError))
+                        {
+                            <div class="alert alert-danger border-0 shadow-sm">
+                                <i class="bi bi-exclamation-circle me-2"></i> @Model.Estado.MensajeError
+                            </div>
+                        }
+
+                        <!-- BOTONES ESTANDARIZADOS -->
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a asp-page="Cliente" class="btn btn-secondary px-4">Volver</a>
+                            <button type="submit" class="btn btn-success px-5 fw-bold shadow-sm" style="background-color: #198754;">
+                                Guardar
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const opcionFormal = document.getElementById('tipoClienteFormal');
+            const opcionConsumidorFinal = document.getElementById('tipoConsumidorFinal');
+            const bloqueInformativo = document.getElementById('bloqueConsumidorFinal');
+            const contenedor = document.getElementById('datosClienteFiscal');
+            const correoGroup = document.getElementById('correoElectronicoGroup');
+            const nit = document.getElementById('Nit');
+            const razonSocial = document.getElementById('RazonSocial');
+            const correo = document.getElementById('CorreoElectronico');
+
+            const actualizarFormulario = () => {
+                const esConsumidorFinal = opcionConsumidorFinal.checked;
+                bloqueInformativo.style.display = esConsumidorFinal ? '' : 'none';
+                contenedor.style.display = esConsumidorFinal ? 'none' : '';
+                correoGroup.style.display = esConsumidorFinal ? 'none' : '';
+                razonSocial.required = !esConsumidorFinal;
+            };
+
+            opcionFormal.addEventListener('change', actualizarFormulario);
+            opcionConsumidorFinal.addEventListener('change', actualizarFormulario);
+            actualizarFormulario();
+        })();
+    </script>
+}
