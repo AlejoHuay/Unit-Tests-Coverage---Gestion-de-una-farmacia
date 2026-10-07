@@ -52,7 +52,7 @@ namespace ProyectoArqSoft.Domain.Validators
 
         private static Result? ValidarNitFormato(string nit)
         {
-            if (nit.StartsWith("+") || nit.StartsWith("-"))
+            if (nit.StartsWith('+') || nit.StartsWith('-'))
                 return Result.Fail("El NIT no debe contener signos positivos ni negativos.");
 
             if (Regex.IsMatch(nit, @"^\d+\.\d+$", RegexOptions.None, TimeSpan.FromSeconds(1)))
