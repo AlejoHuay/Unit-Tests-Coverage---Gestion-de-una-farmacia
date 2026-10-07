@@ -9,6 +9,8 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
 {
     public class UsuarioRepository : IUsuarioRepository
     {
+        private const string ParametroEmail = "@email";
+        private const string ParametroUserName = "@user_name";
         private readonly PostgresDatabase database;
 
         public UsuarioRepository(PostgresDatabase database)
@@ -59,8 +61,8 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
             command.Parameters.AddWithValue("@telefono", t.Telefono);
             command.Parameters.AddWithValue("@activo", t.Activo);
             command.Parameters.AddWithValue("@ci_extencion", t.CiExtencion);
-            command.Parameters.AddWithValue("@email", t.Email);
-            command.Parameters.AddWithValue("@user_name", t.UserName);
+            command.Parameters.AddWithValue(ParametroEmail, t.Email);
+            command.Parameters.AddWithValue(ParametroUserName, t.UserName);
             command.Parameters.AddWithValue("@password_hash", t.PasswordHash);
             command.Parameters.AddWithValue("@role", t.Role);
             command.Parameters.AddWithValue("@must_change_password", t.MustChangePassword);
@@ -99,7 +101,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                              LIMIT 1";
 
             NpgsqlCommand command = new NpgsqlCommand(query);
-            command.Parameters.AddWithValue("@email", email);
+            command.Parameters.AddWithValue(ParametroEmail, email);
 
             return RepositoryDbHelper.ExecuteReaderSingle(database, command, MapearUsuario);
         }
@@ -112,7 +114,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                              LIMIT 1";
 
             NpgsqlCommand command = new NpgsqlCommand(query);
-            command.Parameters.AddWithValue("@user_name", userName);
+            command.Parameters.AddWithValue(ParametroUserName, userName);
 
             return RepositoryDbHelper.ExecuteReaderSingle(database, command, MapearUsuario);
         }
@@ -124,7 +126,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                              WHERE farmacia.normalizar_texto(email) = farmacia.normalizar_texto(@email)";
 
             NpgsqlCommand command = new NpgsqlCommand(query);
-            command.Parameters.AddWithValue("@email", email);
+            command.Parameters.AddWithValue(ParametroEmail, email);
 
             var result = RepositoryDbHelper.ExecuteScalar(database, command);
             return Convert.ToInt32(result) > 0;
@@ -137,7 +139,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                              WHERE farmacia.normalizar_texto(user_name) = farmacia.normalizar_texto(@user_name)";
 
             NpgsqlCommand command = new NpgsqlCommand(query);
-            command.Parameters.AddWithValue("@user_name", userName);
+            command.Parameters.AddWithValue(ParametroUserName, userName);
 
             var result = RepositoryDbHelper.ExecuteScalar(database, command);
             return Convert.ToInt32(result) > 0;
@@ -281,8 +283,8 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
 
             using NpgsqlCommand command = new NpgsqlCommand(query, connection);
             command.Parameters.AddWithValue("@idUsuarioSesion", (object?)idUsuarioSesion ?? DBNull.Value);
-            command.Parameters.AddWithValue("@email", usuario.Email);
-            command.Parameters.AddWithValue("@user_name", usuario.UserName);
+            command.Parameters.AddWithValue(ParametroEmail, usuario.Email);
+            command.Parameters.AddWithValue(ParametroUserName, usuario.UserName);
             command.Parameters.AddWithValue("@role", usuario.Role);
             command.Parameters.AddWithValue("@activo", usuario.Activo);
             command.Parameters.AddWithValue("@id", usuario.IdUsuario);
@@ -331,8 +333,8 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
             command.Parameters.AddWithValue("@ci", usuario.Ci);
             command.Parameters.AddWithValue("@telefono", usuario.Telefono);
             command.Parameters.AddWithValue("@ci_extencion", usuario.CiExtencion);
-            command.Parameters.AddWithValue("@email", usuario.Email);
-            command.Parameters.AddWithValue("@user_name", usuario.UserName);
+            command.Parameters.AddWithValue(ParametroEmail, usuario.Email);
+            command.Parameters.AddWithValue(ParametroUserName, usuario.UserName);
             command.Parameters.AddWithValue("@role", usuario.Role);
             command.Parameters.AddWithValue("@activo", usuario.Activo);
             command.Parameters.AddWithValue("@idUsuarioSesion", (object?)idUsuarioSesion ?? DBNull.Value);

@@ -9,6 +9,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
 {
     public class MedicamentoRepository : IMedicamentoRepository
     {
+        private const string ParametroIdUsuario = "@id_usuario";
         private readonly PostgresDatabase database;
 
         public MedicamentoRepository(PostgresDatabase database)
@@ -33,7 +34,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                 command.Parameters.AddWithValue("@concentracion", t.Concentracion);
                 command.Parameters.AddWithValue("@precio", t.Precio);
                 command.Parameters.AddWithValue("@stock", t.Stock);
-                command.Parameters.AddWithValue("@id_usuario", (object?)t.IdUsuario ?? DBNull.Value);
+                command.Parameters.AddWithValue(ParametroIdUsuario, (object?)t.IdUsuario ?? DBNull.Value);
 
                 connection.Open();
                 return database.ExecuteNonQuery(command);
@@ -64,7 +65,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                 command.Parameters.AddWithValue("@concentracion", t.Concentracion);
                 command.Parameters.AddWithValue("@precio", t.Precio);
                 command.Parameters.AddWithValue("@stock", t.Stock);
-                command.Parameters.AddWithValue("@id_usuario", (object?)t.IdUsuario ?? DBNull.Value);
+                command.Parameters.AddWithValue(ParametroIdUsuario, (object?)t.IdUsuario ?? DBNull.Value);
 
                 connection.Open();
                 return database.ExecuteNonQuery(command);
@@ -83,7 +84,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
             {
                 NpgsqlCommand command = new NpgsqlCommand(query, connection);
                 command.Parameters.AddWithValue("@id", t.Id);
-                command.Parameters.AddWithValue("@id_usuario", (object?)t.IdUsuario ?? DBNull.Value);
+                command.Parameters.AddWithValue(ParametroIdUsuario, (object?)t.IdUsuario ?? DBNull.Value);
 
                 connection.Open();
                 return database.ExecuteNonQuery(command);
@@ -236,7 +237,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
 
                 command.Parameters.AddWithValue("@id", idMedicamento);
                 command.Parameters.AddWithValue("@cantidad", cantidad);
-                command.Parameters.AddWithValue("@id_usuario", idUsuario);
+                command.Parameters.AddWithValue(ParametroIdUsuario, idUsuario);
 
                 connection.Open();
                 return database.ExecuteNonQuery(command);
