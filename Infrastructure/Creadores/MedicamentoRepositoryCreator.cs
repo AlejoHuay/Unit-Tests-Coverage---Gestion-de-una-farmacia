@@ -5,12 +5,12 @@ using ProyectoArqSoft.Infrastructure.Persistence.Repositories;
 
 namespace ProyectoArqSoft.Infrastructure.Creadores
 {
-    public class MedicamentoRepositoryCreator : RepositoryCreator<Medicamento>
+    public class MedicamentoRepositoryCreator : IRepositoryCreator<Medicamento>
     {
         private readonly PostgresDatabase database;
         public MedicamentoRepositoryCreator(PostgresDatabase database) => this.database = database;
 
-        public override IRepository<Medicamento> CreateRepo()
+        public IRepository<Medicamento> CreateRepo()
         {
             return new MedicamentoRepository(database);
         }

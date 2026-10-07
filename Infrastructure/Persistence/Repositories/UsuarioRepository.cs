@@ -166,22 +166,6 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
             return GetAll(string.Empty);
         }
 
-        public int ActivarCuentaConToken(int idUsuario, int idToken, string passwordHash)
-        {
-            using var command = new NpgsqlCommand(@"WITH consumido AS (
-                UPDATE usuario_token SET usado=1, fecha_uso=NOW()
-                WHERE id=@token AND usuario_idusuario=@usuario AND tipo_token='ACTIVATION_CUENTA'
-                  AND usado=0 AND revocado=0 AND fecha_expiracion>NOW()
-                  AND EXISTS(SELECT 1 FROM usuario WHERE id=@usuario AND activo=1)
-                RETURNING usuario_idusuario)
-                UPDATE usuario SET password_hash=@hash,must_change_password=0,ultima_actualizacion=NOW()
-                WHERE id IN (SELECT usuario_idusuario FROM consumido)");
-            command.Parameters.AddWithValue("token", idToken);
-            command.Parameters.AddWithValue("usuario", idUsuario);
-            command.Parameters.AddWithValue("hash", passwordHash);
-            return database.ExecuteNonQuery(command);
-        }
-
         public DataTable GetAll(string filtro)
         {
             DataTable tabla = new DataTable();
@@ -200,6 +184,22 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
             }
 
             return tabla;
+        }
+
+        public int ActivarCuentaConToken(int idUsuario, int idToken, string passwordHash)
+        {
+            using var command = new NpgsqlCommand(@"WITH consumido AS (
+                UPDATE usuario_token SET usado=1, fecha_uso=NOW()
+                WHERE id=@token AND usuario_idusuario=@usuario AND tipo_token='ACTIVATION_CUENTA'
+                  AND usado=0 AND revocado=0 AND fecha_expiracion>NOW()
+                  AND EXISTS(SELECT 1 FROM usuario WHERE id=@usuario AND activo=1)
+                RETURNING usuario_idusuario)
+                UPDATE usuario SET password_hash=@hash,must_change_password=0,ultima_actualizacion=NOW()
+                WHERE id IN (SELECT usuario_idusuario FROM consumido)");
+            command.Parameters.AddWithValue("token", idToken);
+            command.Parameters.AddWithValue("usuario", idUsuario);
+            command.Parameters.AddWithValue("hash", passwordHash);
+            return database.ExecuteNonQuery(command);
         }
 
         private static string ConstruirQuery(string filtro)

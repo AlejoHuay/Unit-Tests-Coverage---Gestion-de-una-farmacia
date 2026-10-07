@@ -16,9 +16,8 @@ namespace ProyectoArqSoft.Infrastructure.Helpers
             if (string.IsNullOrWhiteSpace(tokenPlano))
                 throw new ArgumentException("El token no puede ser nulo o vacío.", nameof(tokenPlano));
 
-            using SHA256 sha256 = SHA256.Create();
             byte[] bytes = Encoding.UTF8.GetBytes(tokenPlano);
-            byte[] hashBytes = sha256.ComputeHash(bytes);
+            byte[] hashBytes = SHA256.HashData(bytes);
 
             StringBuilder sb = new StringBuilder();
             foreach (byte b in hashBytes)

@@ -135,7 +135,7 @@ namespace ProyectoArqSoft.Pages
                 return Page();
             }
 
-            if (!detalles.Any())
+            if (detalles.Count == 0)
             {
                 Estado.MensajeError = "Debe agregar al menos un medicamento.";
                 CargarCatalogos();
@@ -209,7 +209,7 @@ namespace ProyectoArqSoft.Pages
             Response.Headers["X-Redirect-To"] =
                 Url.Page("Venta", new { mensaje = "Venta registrada correctamente." }) ?? "/Venta?mensaje=Venta%20registrada%20correctamente.";
 
-            Response.Headers["Content-Disposition"] = "inline";
+            Response.Headers.ContentDisposition = "inline";
                 return File(pdf, "application/pdf");
         }
 
