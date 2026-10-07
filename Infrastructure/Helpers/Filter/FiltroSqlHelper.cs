@@ -26,7 +26,7 @@ namespace ProyectoArqSoft.Infrastructure.Helpers
                         condicion.Append(" OR ");
                 }
 
-                condicion.Append(")");
+                condicion.Append(')');
             }
 
             return condicion.ToString();

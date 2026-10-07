@@ -5,12 +5,12 @@ using ProyectoArqSoft.Infrastructure.Persistence.Repositories;
 
 namespace ProyectoArqSoft.Infrastructure.Creadores
 {
-    public class ClasificacionRepositoryCreator : RepositoryCreator<Clasificacion>
+    public class ClasificacionRepositoryCreator : IRepositoryCreator<Clasificacion>
     {
         private readonly PostgresDatabase database;
         public ClasificacionRepositoryCreator(PostgresDatabase database) => this.database = database;
 
-        public override IRepository<Clasificacion> CreateRepo()
+        public IRepository<Clasificacion> CreateRepo()
         {
             return new ClasificacionRepository(database);
         }

@@ -9,6 +9,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
 {
     public class ClasificacionRepository : IClasificacionRepository
     {
+        private const string ParametroNombre = "@nombre";
         private readonly PostgresDatabase database;
 
         public ClasificacionRepository(PostgresDatabase database)
@@ -26,7 +27,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
             using (NpgsqlConnection connection = database.CreateConnection())
             {
                 NpgsqlCommand command = new NpgsqlCommand(query, connection);
-                command.Parameters.AddWithValue("@nombre", t.Nombre);
+                command.Parameters.AddWithValue(ParametroNombre, t.Nombre);
                 command.Parameters.AddWithValue("@origen", t.Origen);
                 command.Parameters.AddWithValue("@descripcion", t.Descripcion);
                 command.Parameters.AddWithValue("@id_usuario", (object?)t.IdUsuario ?? DBNull.Value);
@@ -50,7 +51,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
             {
                 NpgsqlCommand command = new NpgsqlCommand(query, connection);
                 command.Parameters.AddWithValue("@id", t.Id);
-                command.Parameters.AddWithValue("@nombre", t.Nombre);
+                command.Parameters.AddWithValue(ParametroNombre, t.Nombre);
                 command.Parameters.AddWithValue("@origen", t.Origen);
                 command.Parameters.AddWithValue("@id_usuario", (object?)t.IdUsuario ?? DBNull.Value);
                 command.Parameters.AddWithValue("@descripcion", t.Descripcion);
@@ -209,7 +210,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
             using (NpgsqlConnection connection = database.CreateConnection())
             {
                 NpgsqlCommand command = new NpgsqlCommand(query, connection);
-                command.Parameters.AddWithValue("@nombre", nombre);
+                command.Parameters.AddWithValue(ParametroNombre, nombre);
 
                 connection.Open();
                 int cantidad = Convert.ToInt32(command.ExecuteScalar());
@@ -229,7 +230,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
             using (NpgsqlConnection connection = database.CreateConnection())
             {
                 NpgsqlCommand command = new NpgsqlCommand(query, connection);
-                command.Parameters.AddWithValue("@nombre", nombre);
+                command.Parameters.AddWithValue(ParametroNombre, nombre);
                 command.Parameters.AddWithValue("@id", idClasificacion);
 
                 connection.Open();

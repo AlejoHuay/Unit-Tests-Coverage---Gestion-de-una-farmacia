@@ -128,7 +128,7 @@ namespace ProyectoArqSoft.Application.Services
             List<DetalleVentaInputDto> detallesInput,
             int? idUsuarioEditor)
         {
-            if (detallesInput == null || !detallesInput.Any())
+            if (detallesInput == null || detallesInput.Count == 0)
                 throw new InvalidOperationException("Debe agregar al menos un medicamento.");
 
             Venta venta = new Venta

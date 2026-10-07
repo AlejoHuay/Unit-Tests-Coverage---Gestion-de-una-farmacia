@@ -10,6 +10,7 @@ namespace ProyectoArqSoft.Application.Services
 {
     public class UsuarioService : IUsuarioService
     {
+        private const string MensajeUsuarioNoExiste = "El usuario no existe.";
         private readonly IUsuarioRepository _repository;
         private readonly UsuarioValidacionGeneral _validacionGeneral;  // Usamos el nuevo validador general
         private readonly ITokenService _tokenService;
@@ -79,7 +80,7 @@ namespace ProyectoArqSoft.Application.Services
 
             Usuario? usuarioActual = _repository.GetById(dto.IdUsuario);
             if (usuarioActual == null)
-                return Result.Fail("El usuario no existe.");
+                return Result.Fail(MensajeUsuarioNoExiste);
 
             AplicarActualizacion(usuarioActual, dto);
 
@@ -92,7 +93,7 @@ namespace ProyectoArqSoft.Application.Services
         public Result ActualizarAccesoUsuario(UsuarioActualizarDto dto, int? idUsuarioSesion)
         {
             var actual = _repository.GetById(dto.IdUsuario);
-            if (actual == null) return Result.Fail("El usuario no existe.");
+            if (actual == null) return Result.Fail(MensajeUsuarioNoExiste);
             var email = dto.Email?.Trim().ToLowerInvariant() ?? "";
             if (email.Length > 255 || !System.Net.Mail.MailAddress.TryCreate(email, out var address) || address.Address != email)
                 return Result.Fail("El correo electrónico no es válido.");
@@ -116,7 +117,7 @@ namespace ProyectoArqSoft.Application.Services
 
             Usuario? usuario = _repository.GetById(idUsuario);
             if (usuario == null)
-                return Result.Fail("El usuario no existe.");
+                return Result.Fail(MensajeUsuarioNoExiste);
 
             int filasAfectadas = _repository.SoftDelete(usuario, idUsuarioSesion);
             return filasAfectadas > 0
@@ -193,7 +194,7 @@ namespace ProyectoArqSoft.Application.Services
 
             Usuario? usuario = _repository.GetById(usuarioToken.UsuarioIdUsuario);
             if (usuario == null)
-                return Result.Fail("El usuario no existe.");
+                return Result.Fail(MensajeUsuarioNoExiste);
 
             string passwordHash = PasswordHelper.Hash(nuevaPassword);
             int filasAfectadas = _repository.ActivarCuentaConToken(usuario.IdUsuario, usuarioToken.IdUsuarioToken, passwordHash);
@@ -203,7 +204,7 @@ namespace ProyectoArqSoft.Application.Services
             return Result.Ok();
         }
 
-        private Usuario ConstruirUsuarioNuevo(UsuarioRegistroDto dto, string role, string passwordHash, int? idUsuarioSesion)
+        private static Usuario ConstruirUsuarioNuevo(UsuarioRegistroDto dto, string role, string passwordHash, int? idUsuarioSesion)
         {
             return new Usuario
             {
@@ -239,13 +240,13 @@ namespace ProyectoArqSoft.Application.Services
 
         }
 
-        private UsuarioDto? ObtenerYMapear(Func<Usuario?> obtenerUsuario)
+        private static UsuarioDto? ObtenerYMapear(Func<Usuario?> obtenerUsuario)
         {
             Usuario? usuario = obtenerUsuario();
             return usuario == null ? null : MapearDto(usuario);
         }
 
-        private UsuarioDto MapearDto(Usuario usuario)
+        private static UsuarioDto MapearDto(Usuario usuario)
         {
             return new UsuarioDto
             {

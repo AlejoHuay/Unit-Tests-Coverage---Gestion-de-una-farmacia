@@ -10,6 +10,10 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
 {
     public class VentaRepository : IVentaRepository
     {
+        private const string ParametroIdVenta = "@id_venta";
+        private const string ParametroIdCliente = "@idCliente";
+        private const string ParametroCantidad = "@cantidad";
+        private const string ParametroIdMedicamento = "@id_medicamento";
         private readonly PostgresDatabase database;
 
         public VentaRepository(PostgresDatabase database)
@@ -131,7 +135,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                 connection.Open();
 
                 NpgsqlCommand command = new NpgsqlCommand(query, connection);
-                command.Parameters.AddWithValue("@id_venta", idVenta);
+                command.Parameters.AddWithValue(ParametroIdVenta, idVenta);
 
                 using (NpgsqlDataReader reader = command.ExecuteReader())
                 {
@@ -172,7 +176,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                                             WHERE id = @idCliente AND estado = 1";
 
                     NpgsqlCommand commandCliente = new NpgsqlCommand(queryCliente, connection, transaction);
-                    commandCliente.Parameters.AddWithValue("@idCliente", venta.IdCliente);
+                    commandCliente.Parameters.AddWithValue(ParametroIdCliente, venta.IdCliente);
 
                     using (NpgsqlDataReader reader = commandCliente.ExecuteReader())
                     {
@@ -194,7 +198,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                     NpgsqlCommand commandVenta = new NpgsqlCommand(queryVenta, connection, transaction);
                     commandVenta.Parameters.AddWithValue("@total", venta.Total);
                     commandVenta.Parameters.AddWithValue("@metodo_pago", venta.MetodoPago);
-                    commandVenta.Parameters.AddWithValue("@idCliente", venta.IdCliente);
+                    commandVenta.Parameters.AddWithValue(ParametroIdCliente, venta.IdCliente);
                     commandVenta.Parameters.AddWithValue("@idUsuario", venta.IdUsuario);
                     commandVenta.Parameters.AddWithValue("@nit", venta.Nit);
                     commandVenta.Parameters.AddWithValue("@razon_social", venta.RazonSocial);
@@ -216,10 +220,10 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                                                 (@cantidad, @precio_unitario, @id_venta, @id_medicamento)";
 
                         NpgsqlCommand commandDetalle = new NpgsqlCommand(queryDetalle, connection, transaction);
-                        commandDetalle.Parameters.AddWithValue("@cantidad", detalle.Cantidad);
+                        commandDetalle.Parameters.AddWithValue(ParametroCantidad, detalle.Cantidad);
                         commandDetalle.Parameters.AddWithValue("@precio_unitario", detalle.PrecioUnitario);
-                        commandDetalle.Parameters.AddWithValue("@id_venta", idVenta);
-                        commandDetalle.Parameters.AddWithValue("@id_medicamento", detalle.IdMedicamento);
+                        commandDetalle.Parameters.AddWithValue(ParametroIdVenta, idVenta);
+                        commandDetalle.Parameters.AddWithValue(ParametroIdMedicamento, detalle.IdMedicamento);
 
                         commandDetalle.ExecuteNonQuery();
                     }
@@ -263,7 +267,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                                     WHERE id = @idCliente AND estado = 1";
 
                     NpgsqlCommand commandCliente = new NpgsqlCommand(queryCliente, connection, transaction);
-                    commandCliente.Parameters.AddWithValue("@idCliente", venta.IdCliente);
+                    commandCliente.Parameters.AddWithValue(ParametroIdCliente, venta.IdCliente);
 
                     using (NpgsqlDataReader reader = commandCliente.ExecuteReader())
                     {
@@ -293,8 +297,8 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                                                 WHERE id = @id_medicamento";
 
                         NpgsqlCommand commandRestore = new NpgsqlCommand(queryRestore, connection, transaction);
-                        commandRestore.Parameters.AddWithValue("@cantidad", detalleActual.Cantidad);
-                        commandRestore.Parameters.AddWithValue("@id_medicamento", detalleActual.IdMedicamento);
+                        commandRestore.Parameters.AddWithValue(ParametroCantidad, detalleActual.Cantidad);
+                        commandRestore.Parameters.AddWithValue(ParametroIdMedicamento, detalleActual.IdMedicamento);
                         commandRestore.ExecuteNonQuery();
                     }
 
@@ -309,7 +313,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                                                   WHERE id_venta = @id_venta";
 
                     NpgsqlCommand commandDeleteDetalles = new NpgsqlCommand(queryDeleteDetalles, connection, transaction);
-                    commandDeleteDetalles.Parameters.AddWithValue("@id_venta", venta.Id);
+                    commandDeleteDetalles.Parameters.AddWithValue(ParametroIdVenta, venta.Id);
                     commandDeleteDetalles.ExecuteNonQuery();
 
                     string queryUpdateVenta = @"UPDATE venta
@@ -326,7 +330,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                     NpgsqlCommand commandUpdateVenta = new NpgsqlCommand(queryUpdateVenta, connection, transaction);
                     commandUpdateVenta.Parameters.AddWithValue("@total", venta.Total);
                     commandUpdateVenta.Parameters.AddWithValue("@metodo_pago", venta.MetodoPago);
-                    commandUpdateVenta.Parameters.AddWithValue("@idCliente", venta.IdCliente);
+                    commandUpdateVenta.Parameters.AddWithValue(ParametroIdCliente, venta.IdCliente);
                     commandUpdateVenta.Parameters.AddWithValue("@id_usuario_editor", (object?)venta.IdUsuarioEditor ?? DBNull.Value);
                     commandUpdateVenta.Parameters.AddWithValue("@id", venta.Id);
                     commandUpdateVenta.Parameters.AddWithValue("@nit", venta.Nit);
@@ -354,10 +358,10 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                                                 (@cantidad, @precio_unitario, @id_venta, @id_medicamento)";
 
                         NpgsqlCommand commandDetalle = new NpgsqlCommand(queryDetalle, connection, transaction);
-                        commandDetalle.Parameters.AddWithValue("@cantidad", detalle.Cantidad);
+                        commandDetalle.Parameters.AddWithValue(ParametroCantidad, detalle.Cantidad);
                         commandDetalle.Parameters.AddWithValue("@precio_unitario", detalle.PrecioUnitario);
-                        commandDetalle.Parameters.AddWithValue("@id_venta", venta.Id);
-                        commandDetalle.Parameters.AddWithValue("@id_medicamento", detalle.IdMedicamento);
+                        commandDetalle.Parameters.AddWithValue(ParametroIdVenta, venta.Id);
+                        commandDetalle.Parameters.AddWithValue(ParametroIdMedicamento, detalle.IdMedicamento);
                         commandDetalle.ExecuteNonQuery();
                     }
 
@@ -418,8 +422,8 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                                                 WHERE id = @id_medicamento";
 
                         NpgsqlCommand commandRestore = new NpgsqlCommand(queryRestore, connection, transaction);
-                        commandRestore.Parameters.AddWithValue("@cantidad", detalle.Cantidad);
-                        commandRestore.Parameters.AddWithValue("@id_medicamento", detalle.IdMedicamento);
+                        commandRestore.Parameters.AddWithValue(ParametroCantidad, detalle.Cantidad);
+                        commandRestore.Parameters.AddWithValue(ParametroIdMedicamento, detalle.IdMedicamento);
                         commandRestore.ExecuteNonQuery();
                     }
 
@@ -517,7 +521,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                                  WHERE id = @id_medicamento";
 
                 NpgsqlCommand command = new NpgsqlCommand(query, connection, transaction);
-                command.Parameters.AddWithValue("@id_medicamento", detalle.IdMedicamento);
+                command.Parameters.AddWithValue(ParametroIdMedicamento, detalle.IdMedicamento);
 
                 using NpgsqlDataReader reader = command.ExecuteReader();
 
@@ -561,8 +565,8 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                                AND stock >= @cantidad";
 
             NpgsqlCommand command = new NpgsqlCommand(query, connection, transaction);
-            command.Parameters.AddWithValue("@cantidad", cantidad);
-            command.Parameters.AddWithValue("@id_medicamento", idMedicamento);
+            command.Parameters.AddWithValue(ParametroCantidad, cantidad);
+            command.Parameters.AddWithValue(ParametroIdMedicamento, idMedicamento);
 
             int filas = command.ExecuteNonQuery();
 
@@ -598,7 +602,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
             return Convert.ToInt32(command.ExecuteScalar()) > 0;
         }
 
-        private List<DetalleVenta> GetDetallesByVentaIdTransaccional(NpgsqlConnection connection, NpgsqlTransaction transaction, int idVenta)
+        private static List<DetalleVenta> GetDetallesByVentaIdTransaccional(NpgsqlConnection connection, NpgsqlTransaction transaction, int idVenta)
         {
             List<DetalleVenta> detalles = new();
 
@@ -610,7 +614,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
                              WHERE id_venta = @id_venta";
 
             NpgsqlCommand command = new NpgsqlCommand(query, connection, transaction);
-            command.Parameters.AddWithValue("@id_venta", idVenta);
+            command.Parameters.AddWithValue(ParametroIdVenta, idVenta);
 
             using NpgsqlDataReader reader = command.ExecuteReader();
             while (reader.Read())

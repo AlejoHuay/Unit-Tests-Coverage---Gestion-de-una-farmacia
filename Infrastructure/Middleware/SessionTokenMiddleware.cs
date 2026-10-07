@@ -15,7 +15,7 @@ namespace ProyectoArqSoft.Infrastructure.Middleware
             
             if (!string.IsNullOrEmpty(token) && string.IsNullOrEmpty(context.Request.Headers.Authorization))
             {
-                context.Request.Headers["Authorization"] = $"Bearer {token}";
+                context.Request.Headers.Authorization = $"Bearer {token}";
             }
 
             await _next(context);

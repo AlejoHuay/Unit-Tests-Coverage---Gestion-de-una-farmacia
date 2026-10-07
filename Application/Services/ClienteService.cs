@@ -102,7 +102,7 @@ namespace ProyectoArqSoft.Application.Services
             return Result.Ok();
         }
 
-        private Cliente ConstruirCliente(
+        private static Cliente ConstruirCliente(
             int id,
             bool esConsumidorFinal,
             string nit,

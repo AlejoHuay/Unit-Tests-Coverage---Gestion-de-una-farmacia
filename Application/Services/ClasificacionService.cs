@@ -89,7 +89,7 @@ namespace ProyectoArqSoft.Application.Services
             return Result.Ok();
         }
 
-        private Clasificacion ConstruirClasificacion(int id, string nombre, string origen, string descripcion)
+        private static Clasificacion ConstruirClasificacion(int id, string nombre, string origen, string descripcion)
         {
             return new Clasificacion
             {

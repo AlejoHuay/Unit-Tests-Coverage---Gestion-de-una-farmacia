@@ -112,7 +112,7 @@ namespace ProyectoArqSoft.Application.Services
             return Result.Ok();
         }
 
-        private Medicamento ConstruirMedicamento(
+        private static Medicamento ConstruirMedicamento(
             int id,
             string nombre,
             string presentacion,
