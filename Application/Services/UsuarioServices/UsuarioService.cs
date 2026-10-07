@@ -203,7 +203,7 @@ namespace ProyectoArqSoft.Application.Services
             return Result.Ok();
         }
 
-        private Usuario ConstruirUsuarioNuevo(UsuarioRegistroDto dto, string role, string passwordHash, int? idUsuarioSesion)
+        private static Usuario ConstruirUsuarioNuevo(UsuarioRegistroDto dto, string role, string passwordHash, int? idUsuarioSesion)
         {
             return new Usuario
             {
@@ -245,7 +245,7 @@ namespace ProyectoArqSoft.Application.Services
             return usuario == null ? null : MapearDto(usuario);
         }
 
-        private UsuarioDto MapearDto(Usuario usuario)
+        private static UsuarioDto MapearDto(Usuario usuario)
         {
             return new UsuarioDto
             {

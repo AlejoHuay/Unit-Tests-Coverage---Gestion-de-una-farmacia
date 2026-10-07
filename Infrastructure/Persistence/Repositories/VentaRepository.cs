@@ -598,7 +598,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
             return Convert.ToInt32(command.ExecuteScalar()) > 0;
         }
 
-        private List<DetalleVenta> GetDetallesByVentaIdTransaccional(NpgsqlConnection connection, NpgsqlTransaction transaction, int idVenta)
+        private static List<DetalleVenta> GetDetallesByVentaIdTransaccional(NpgsqlConnection connection, NpgsqlTransaction transaction, int idVenta)
         {
             List<DetalleVenta> detalles = new();
 
