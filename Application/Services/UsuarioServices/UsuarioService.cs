@@ -240,7 +240,7 @@ namespace ProyectoArqSoft.Application.Services
 
         }
 
-        private UsuarioDto? ObtenerYMapear(Func<Usuario?> obtenerUsuario)
+        private static UsuarioDto? ObtenerYMapear(Func<Usuario?> obtenerUsuario)
         {
             Usuario? usuario = obtenerUsuario();
             return usuario == null ? null : MapearDto(usuario);
