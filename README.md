@@ -1,5 +1,16 @@
 # 🏥 Gestor de Farmacia - Razor Pages
 
+## Pruebas unitarias y cobertura
+
+Proyecto de pruebas independiente con **xUnit + Coverlet + ReportGenerator** en
+[`tests/`](tests/README.md). Desde la raíz, ejecuta:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\Invoke-Coverage.ps1 -OpenReport
+```
+
+La guía explica cómo agregar pruebas, comparar reportes y enviar cobertura a SonarQube.
+
 La versión actual utiliza **PostgreSQL / Supabase con Npgsql**. Consulta [configuración, migración desde MySQL y pruebas](database/postgresql/LEEME.md).
 
 ```powershell
