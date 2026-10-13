@@ -11,6 +11,55 @@ namespace ProyectoArqSoft.Tests.Services;
 public class VentaServiceTests
 {
     [Fact]
+    public void ObtenerPorId_ConVentaExistente_EnviaElIdYDevuelveLaMismaVenta()
+    {
+        // Preparar: una venta conocida y una consulta para un ID especifico.
+        const int id = 17;
+        var ventaEsperada = new Venta { Id = id, Total = 39.80m };
+        var repository = new Mock<IVentaRepository>(MockBehavior.Strict);
+        var medicamentoRepository = new Mock<IMedicamentoRepository>(MockBehavior.Strict);
+        var validador = new Mock<IResult<Venta>>(MockBehavior.Strict);
+        repository.Setup(repo => repo.GetById(id)).Returns(ventaEsperada);
+
+        var servicio = new VentaService(
+            repository.Object, medicamentoRepository.Object, validador.Object);
+
+        // Actuar.
+        var resultado = servicio.ObtenerPorId(id);
+
+        // Comprobar: conservar el ID consultado y la instancia del repositorio.
+        Assert.Same(ventaEsperada, resultado);
+        repository.Verify(repo => repo.GetById(id), Times.Once);
+        repository.VerifyNoOtherCalls();
+        medicamentoRepository.VerifyNoOtherCalls();
+        validador.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void ObtenerPorId_ConVentaInexistente_DevuelveNull()
+    {
+        // Preparar: el repositorio indica que no encontro la venta solicitada.
+        const int id = 999;
+        var repository = new Mock<IVentaRepository>(MockBehavior.Strict);
+        var medicamentoRepository = new Mock<IMedicamentoRepository>(MockBehavior.Strict);
+        var validador = new Mock<IResult<Venta>>(MockBehavior.Strict);
+        repository.Setup(repo => repo.GetById(id)).Returns((Venta?)null);
+
+        var servicio = new VentaService(
+            repository.Object, medicamentoRepository.Object, validador.Object);
+
+        // Actuar: el mismo camino del servicio, con un resultado diferente.
+        var resultado = servicio.ObtenerPorId(id);
+
+        // Comprobar: preservar null sin crear una venta ni consultar otras fuentes.
+        Assert.Null(resultado);
+        repository.Verify(repo => repo.GetById(id), Times.Once);
+        repository.VerifyNoOtherCalls();
+        medicamentoRepository.VerifyNoOtherCalls();
+        validador.VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public void ObtenerTodos_ConFiltro_EnviaElFiltroYDevuelveLaTablaDelRepositorio()
     {
         // Preparar: el filtro debe llegar al repositorio sin modificaciones.
