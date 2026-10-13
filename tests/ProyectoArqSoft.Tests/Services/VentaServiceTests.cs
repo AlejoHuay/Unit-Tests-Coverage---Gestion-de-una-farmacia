@@ -11,6 +11,35 @@ namespace ProyectoArqSoft.Tests.Services;
 public class VentaServiceTests
 {
     [Fact]
+    public void ObtenerTodos_ConFiltro_EnviaElFiltroYDevuelveLaTablaDelRepositorio()
+    {
+        // Preparar: el filtro debe llegar al repositorio sin modificaciones.
+        const string filtro = "  Cliente de prueba  ";
+        var tablaEsperada = new DataTable();
+        tablaEsperada.Columns.Add("Id", typeof(int));
+        tablaEsperada.Columns.Add("Total", typeof(decimal));
+        tablaEsperada.Rows.Add(2, 24.50m);
+
+        var repository = new Mock<IVentaRepository>(MockBehavior.Strict);
+        var medicamentoRepository = new Mock<IMedicamentoRepository>(MockBehavior.Strict);
+        var validador = new Mock<IResult<Venta>>(MockBehavior.Strict);
+        repository.Setup(repo => repo.GetAll(filtro)).Returns(tablaEsperada);
+
+        var servicio = new VentaService(
+            repository.Object, medicamentoRepository.Object, validador.Object);
+
+        // Actuar: invocar exclusivamente la sobrecarga que recibe el filtro.
+        var resultado = servicio.ObtenerTodos(filtro);
+
+        // Comprobar: conservar el argumento y devolver la misma tabla recibida.
+        Assert.Same(tablaEsperada, resultado);
+        repository.Verify(repo => repo.GetAll(filtro), Times.Once);
+        repository.VerifyNoOtherCalls();
+        medicamentoRepository.VerifyNoOtherCalls();
+        validador.VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public void ObtenerTodos_SinFiltro_DevuelveLaTablaDelRepositorio()
     {
         // Preparar: una tabla conocida y dependencias sin acceso a base de datos.
