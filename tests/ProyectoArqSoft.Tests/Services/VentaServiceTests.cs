@@ -11,6 +11,42 @@ namespace ProyectoArqSoft.Tests.Services;
 public class VentaServiceTests
 {
     [Fact]
+    public void ObtenerDetallesPorVenta_ConDetalles_EnviaElIdYDevuelveLaMismaLista()
+    {
+        // Preparar: dos detalles conocidos para una venta especifica.
+        const int idVenta = 17;
+        var primerDetalle = new DetalleVenta
+        {
+            IdVenta = idVenta, IdMedicamento = 3, Cantidad = 2, PrecioUnitario = 12.25m
+        };
+        var segundoDetalle = new DetalleVenta
+        {
+            IdVenta = idVenta, IdMedicamento = 8, Cantidad = 3, PrecioUnitario = 5.10m
+        };
+        var detallesEsperados = new List<DetalleVenta> { primerDetalle, segundoDetalle };
+        var repository = new Mock<IVentaRepository>(MockBehavior.Strict);
+        var medicamentoRepository = new Mock<IMedicamentoRepository>(MockBehavior.Strict);
+        var validador = new Mock<IResult<Venta>>(MockBehavior.Strict);
+        repository.Setup(repo => repo.GetDetallesByVentaId(idVenta)).Returns(detallesEsperados);
+
+        var servicio = new VentaService(
+            repository.Object, medicamentoRepository.Object, validador.Object);
+
+        // Actuar: recorrer el unico camino del metodo.
+        var resultado = servicio.ObtenerDetallesPorVenta(idVenta);
+
+        // Comprobar: conservar la lista, sus elementos y su orden.
+        Assert.Same(detallesEsperados, resultado);
+        Assert.Collection(resultado,
+            detalle => Assert.Same(primerDetalle, detalle),
+            detalle => Assert.Same(segundoDetalle, detalle));
+        repository.Verify(repo => repo.GetDetallesByVentaId(idVenta), Times.Once);
+        repository.VerifyNoOtherCalls();
+        medicamentoRepository.VerifyNoOtherCalls();
+        validador.VerifyNoOtherCalls();
+    }
+
+    [Fact]
     public void ObtenerPorId_ConVentaExistente_EnviaElIdYDevuelveLaMismaVenta()
     {
         // Preparar: una venta conocida y una consulta para un ID especifico.
