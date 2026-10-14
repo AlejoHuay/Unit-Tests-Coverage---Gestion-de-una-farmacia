@@ -14,6 +14,21 @@ public class MedicamentoServiceTests
 {
 
     [Fact]
+    public void UpdateStock_ConValidacionRechazada_DevuelveElRechazoSinActualizar()
+    {
+        var rechazo = Result.Fail("Movimiento invalido.");
+        _repository.Setup(r => r.GetById(17)).Returns(new Medicamento { Id = 17, Stock = 20 });
+        _movimientoValidador.Setup(v => v.Validar(It.IsAny<MovimientoStockDto>())).Returns(rechazo);
+
+        var resultado = CrearServicio().UpdateStock(17, 4, false, 9);
+
+        Assert.Same(rechazo, resultado);
+        _repository.Verify(r => r.GetById(17), Times.Once);
+        _movimientoValidador.Verify(v => v.Validar(It.IsAny<MovimientoStockDto>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void UpdateStock_ConMedicamentoInexistente_FallaSinValidarNiActualizar()
     {
         _repository.Setup(r => r.GetById(17)).Returns((Medicamento?)null);
