@@ -1,5 +1,8 @@
 # Pruebas unitarias y cobertura
 
+La [guia de MedicamentoService](MedicamentoService.md) relaciona sus pruebas
+con los caminos independientes y documenta la cobertura verificada del modulo.
+
 Este directorio contiene un proyecto xUnit independiente del proyecto web. Ambos
 estan en `ProyectoArqSoft.sln`. El proyecto web excluye `tests/**` y `coverage/**`
 de sus elementos para evitar compilar las pruebas o publicar los reportes.
