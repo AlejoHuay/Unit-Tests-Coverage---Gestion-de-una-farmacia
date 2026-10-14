@@ -13,6 +13,21 @@ public class ClienteServiceTests
 {
 
     [Fact]
+    public void Eliminar_SinFilasAfectadas_DevuelveError()
+    {
+        _repository.Setup(r => r.Delete(It.Is<Cliente>(
+            c => c.IdCliente == 17 && c.IdUsuario == 9))).Returns(0);
+
+        var resultado = CrearServicio().Eliminar(17, 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("No se pudo eliminar el cliente.", resultado.Error);
+        _repository.Verify(r => r.Delete(It.Is<Cliente>(
+            c => c.IdCliente == 17 && c.IdUsuario == 9)), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void Eliminar_ConFilasAfectadas_EnviaAmbosIdsYDevuelveExito()
     {
         _repository.Setup(r => r.Delete(It.Is<Cliente>(
