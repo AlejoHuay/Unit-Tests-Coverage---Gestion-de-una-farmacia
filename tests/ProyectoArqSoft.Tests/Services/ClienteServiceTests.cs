@@ -12,6 +12,39 @@ namespace ProyectoArqSoft.Tests.Services;
 public class ClienteServiceTests
 {
 
+    [Theory]
+    [InlineData(true, "123456", "CF", "Consumidor Final")]
+    [InlineData(false, "cF", "cF", "Cliente")]
+    public void Crear_ConNitConsumidorFinal_NoConsultaDuplicadosYNormalizaCorreoNulo(
+        bool esConsumidorFinal, string nitEntrada, string nitEsperado, string razonEsperada)
+    {
+        Cliente? insertado = null;
+        _validador.Setup(v => v.Validar(It.IsAny<Cliente>()))
+            .Callback<Cliente>(c =>
+            {
+                // La bandera reemplaza los datos antes de validar; el correo nunca es null.
+                Assert.Equal(nitEsperado, c.Nit);
+                Assert.Equal(razonEsperada, c.RazonSocial);
+                Assert.Equal(string.Empty, c.CorreoElectronico);
+            }).Returns(Result.Ok());
+        _repository.Setup(r => r.Insert(It.IsAny<Cliente>()))
+            .Callback<Cliente>(c => insertado = c).Returns(1);
+
+        var resultado = CrearServicio().Crear(esConsumidorFinal, nitEntrada, "Cliente", null, 9);
+
+        Assert.True(resultado.IsSuccess);
+        Assert.NotNull(insertado);
+        Assert.Equal(0, insertado.IdCliente);
+        Assert.Equal(9, insertado.IdUsuario);
+        Assert.Equal(nitEsperado, insertado.Nit);
+        Assert.Equal(razonEsperada, insertado.RazonSocial);
+        Assert.Equal(string.Empty, insertado.CorreoElectronico);
+        _validador.Verify(v => v.Validar(It.IsAny<Cliente>()), Times.Once);
+        _repository.Verify(r => r.Insert(It.IsAny<Cliente>()), Times.Once);
+        // No se configuro GetAll: CF omite duplicados, incluso con otra capitalizacion.
+        VerificarSinOtrasLlamadas();
+    }
+
     [Fact]
     public void Eliminar_SinFilasAfectadas_DevuelveError()
     {
