@@ -14,6 +14,20 @@ public class MedicamentoServiceTests
 {
 
     [Fact]
+    public void Actualizar_ConValidacionRechazada_DevuelveElRechazoSinActualizar()
+    {
+        var rechazo = Result.Fail("Medicamento invalido.");
+        _validador.Setup(v => v.Validar(It.IsAny<Medicamento>())).Returns(rechazo);
+        var entrada = new MedicamentoActualizarDto { Id = 17, IdUsuario = 9 };
+
+        var resultado = CrearServicio().Actualizar(entrada);
+
+        Assert.Same(rechazo, resultado);
+        _validador.Verify(v => v.Validar(It.IsAny<Medicamento>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void Actualizar_ConDatosValidos_LimpiaCamposYActualizaElMedicamentoValidado()
     {
         var entrada = new MedicamentoActualizarDto
