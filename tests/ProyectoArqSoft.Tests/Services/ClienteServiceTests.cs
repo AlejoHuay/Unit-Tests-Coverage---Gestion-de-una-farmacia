@@ -13,6 +13,23 @@ public class ClienteServiceTests
 {
 
     [Fact]
+    public void Crear_ConNitDuplicado_DevuelveErrorSinInsertar()
+    {
+        _validador.Setup(v => v.Validar(It.IsAny<Cliente>())).Returns(Result.Ok());
+        // La coincidencia debe ser exacta tras quitar espacios, no solo un filtro parecido.
+        _repository.Setup(r => r.GetAll("123456"))
+            .Returns(TablaClientes((17, " 123 456 ")));
+
+        var resultado = CrearServicio().Crear(false, "123456", "Cliente", "cliente@correo.com", 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("Ya existe un cliente con ese NIT.", resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Cliente>()), Times.Once);
+        _repository.Verify(r => r.GetAll("123456"), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void Crear_ConValidacionRechazada_DevuelveElRechazoSinConsultarNiInsertar()
     {
         var rechazo = Result.Fail("Cliente invalido.");
