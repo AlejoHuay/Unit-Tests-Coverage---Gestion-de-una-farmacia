@@ -12,6 +12,20 @@ namespace ProyectoArqSoft.Tests.Services;
 
 public class MedicamentoServiceTests
 {
+
+    [Fact]
+    public void ObtenerTodos_ConFiltro_EnviaElFiltroSinModificar()
+    {
+        var tabla = new DataTable();
+        const string filtro = "  Paracetamol  ";
+        _repository.Setup(r => r.GetAll(filtro)).Returns(tabla);
+
+        var resultado = CrearServicio().ObtenerTodos(filtro);
+
+        Assert.Same(tabla, resultado);
+        _repository.Verify(r => r.GetAll(filtro), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
     private readonly Mock<IMedicamentoRepository> _repository = new(MockBehavior.Strict);
     private readonly Mock<IResult<Medicamento>> _validador = new(MockBehavior.Strict);
     private readonly Mock<IResult<MovimientoStockDto>> _movimientoValidador = new(MockBehavior.Strict);
