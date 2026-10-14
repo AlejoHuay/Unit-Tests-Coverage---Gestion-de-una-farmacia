@@ -11,6 +11,20 @@ namespace ProyectoArqSoft.Tests.Services;
 
 public class ClienteServiceTests
 {
+
+    [Fact]
+    public void ObtenerTodos_ConFiltro_EnviaElFiltroSinModificar()
+    {
+        const string filtro = "  Cliente de prueba  ";
+        var tabla = new DataTable();
+        _repository.Setup(r => r.GetAll(filtro)).Returns(tabla);
+
+        var resultado = CrearServicio().ObtenerTodos(filtro);
+
+        Assert.Same(tabla, resultado);
+        _repository.Verify(r => r.GetAll(filtro), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
     private readonly Mock<IRepository<Cliente>> _repository = new(MockBehavior.Strict);
     private readonly Mock<IResult<Cliente>> _validador = new(MockBehavior.Strict);
 
