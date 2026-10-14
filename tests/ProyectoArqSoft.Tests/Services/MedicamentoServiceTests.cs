@@ -14,6 +14,19 @@ public class MedicamentoServiceTests
 {
 
     [Fact]
+    public void ObtenerDestacados_DevuelveLaTablaDelRepositorio()
+    {
+        var tabla = new DataTable();
+        _repository.Setup(r => r.GetDestacados()).Returns(tabla);
+
+        var resultado = CrearServicio().ObtenerDestacados();
+
+        Assert.Same(tabla, resultado);
+        _repository.Verify(r => r.GetDestacados(), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void ObtenerPorId_EnviaElIdYDevuelveElMedicamentoDelRepositorio()
     {
         var medicamento = new Medicamento { Id = 17 };
