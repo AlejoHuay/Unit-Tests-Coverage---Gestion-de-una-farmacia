@@ -13,6 +13,23 @@ namespace ProyectoArqSoft.Tests.Services;
 public class MedicamentoServiceTests
 {
 
+    [Fact]
+    public void UpdateStock_SinFilasActualizadas_DevuelveError()
+    {
+        _repository.Setup(r => r.GetById(17)).Returns(new Medicamento { Id = 17, Stock = 20 });
+        _movimientoValidador.Setup(v => v.Validar(It.IsAny<MovimientoStockDto>())).Returns(Result.Ok());
+        _repository.Setup(r => r.UpdateStock(17, 4, true, 9)).Returns(0);
+
+        var resultado = CrearServicio().UpdateStock(17, 4, true, 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("No se pudo actualizar el stock del medicamento.", resultado.Error);
+        _repository.Verify(r => r.GetById(17), Times.Once);
+        _movimientoValidador.Verify(v => v.Validar(It.IsAny<MovimientoStockDto>()), Times.Once);
+        _repository.Verify(r => r.UpdateStock(17, 4, true, 9), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
