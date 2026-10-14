@@ -12,6 +12,19 @@ namespace ProyectoArqSoft.Tests.Services;
 public class ClienteServiceTests
 {
 
+    [Fact]
+    public void Crear_ConValidacionRechazada_DevuelveElRechazoSinConsultarNiInsertar()
+    {
+        var rechazo = Result.Fail("Cliente invalido.");
+        _validador.Setup(v => v.Validar(It.IsAny<Cliente>())).Returns(rechazo);
+
+        var resultado = CrearServicio().Crear(false, "123456", "Cliente", "cliente@correo.com", 9);
+
+        Assert.Same(rechazo, resultado);
+        _validador.Verify(v => v.Validar(It.IsAny<Cliente>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
     private static DataTable TablaClientes(params (int Id, string? Nit)[] filas)
     {
         var tabla = new DataTable();
