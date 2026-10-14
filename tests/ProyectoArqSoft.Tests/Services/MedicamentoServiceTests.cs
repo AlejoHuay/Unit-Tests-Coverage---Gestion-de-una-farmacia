@@ -14,6 +14,40 @@ public class MedicamentoServiceTests
 {
 
     [Fact]
+    public void Actualizar_ConDatosValidos_LimpiaCamposYActualizaElMedicamentoValidado()
+    {
+        var entrada = new MedicamentoActualizarDto
+        {
+            Id = 17, Nombre = "  Ibuprofeno   Forte  ", Presentacion = "  Caja   x20  ",
+            IdClasificacion = 6, Concentracion = "  400   mg  ",
+            Precio = 18.75m, Stock = 32, IdUsuario = 9
+        };
+        Medicamento? validado = null;
+        Medicamento? actualizado = null;
+        _validador.Setup(v => v.Validar(It.IsAny<Medicamento>()))
+            .Callback<Medicamento>(m => validado = m).Returns(Result.Ok());
+        _repository.Setup(r => r.Update(It.IsAny<Medicamento>()))
+            .Callback<Medicamento>(m => actualizado = m).Returns(1);
+
+        var resultado = CrearServicio().Actualizar(entrada);
+
+        Assert.True(resultado.IsSuccess);
+        Assert.NotNull(validado);
+        Assert.Same(validado, actualizado);
+        Assert.Equal(17, validado.Id);
+        Assert.Equal("Ibuprofeno Forte", validado.Nombre);
+        Assert.Equal("Caja x20", validado.Presentacion);
+        Assert.Equal(6, validado.IdClasificacion);
+        Assert.Equal("400 mg", validado.Concentracion);
+        Assert.Equal(18.75m, validado.Precio);
+        Assert.Equal(32, validado.Stock);
+        Assert.Equal(9, validado.IdUsuario);
+        _validador.Verify(v => v.Validar(It.IsAny<Medicamento>()), Times.Once);
+        _repository.Verify(r => r.Update(It.IsAny<Medicamento>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void Crear_SinFilasInsertadas_DevuelveError()
     {
         _validador.Setup(v => v.Validar(It.IsAny<Medicamento>())).Returns(Result.Ok());
