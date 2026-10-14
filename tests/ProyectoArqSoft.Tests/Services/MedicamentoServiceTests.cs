@@ -14,6 +14,19 @@ public class MedicamentoServiceTests
 {
 
     [Fact]
+    public void UpdateStock_ConMedicamentoInexistente_FallaSinValidarNiActualizar()
+    {
+        _repository.Setup(r => r.GetById(17)).Returns((Medicamento?)null);
+
+        var resultado = CrearServicio().UpdateStock(17, 4, true, 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("El medicamento no existe o no está activo.", resultado.Error);
+        _repository.Verify(r => r.GetById(17), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void EliminarLogicamente_SinFilasAfectadas_DevuelveError()
     {
         _repository.Setup(r => r.Delete(It.Is<Medicamento>(
