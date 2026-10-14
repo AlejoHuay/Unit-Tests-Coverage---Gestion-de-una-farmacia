@@ -13,6 +13,32 @@ namespace ProyectoArqSoft.Tests.Services;
 public class MedicamentoServiceTests
 {
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void UpdateStock_ConMovimientoValido_EnviaLosDatosYDevuelveExito(bool esEntrada)
+    {
+        _repository.Setup(r => r.GetById(17)).Returns(new Medicamento { Id = 17, Stock = 20 });
+        MovimientoStockDto? validado = null;
+        _movimientoValidador.Setup(v => v.Validar(It.IsAny<MovimientoStockDto>()))
+            .Callback<MovimientoStockDto>(m => validado = m).Returns(Result.Ok());
+        _repository.Setup(r => r.UpdateStock(17, 4, esEntrada, 9)).Returns(1);
+
+        var resultado = CrearServicio().UpdateStock(17, 4, esEntrada, 9);
+
+        Assert.True(resultado.IsSuccess);
+        Assert.NotNull(validado);
+        Assert.Equal(17, validado.IdMedicamento);
+        Assert.Equal(4, validado.Cantidad);
+        Assert.Equal(esEntrada, validado.EsEntrada);
+        Assert.Equal(9, validado.IdUsuario);
+        Assert.Equal(20, validado.StockActual);
+        _repository.Verify(r => r.GetById(17), Times.Once);
+        _movimientoValidador.Verify(v => v.Validar(It.IsAny<MovimientoStockDto>()), Times.Once);
+        _repository.Verify(r => r.UpdateStock(17, 4, esEntrada, 9), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
     [Fact]
     public void UpdateStock_ConValidacionRechazada_DevuelveElRechazoSinActualizar()
     {
