@@ -14,6 +14,27 @@ public class MedicamentoServiceTests
 {
 
     [Fact]
+    public void Actualizar_SinFilasActualizadas_DevuelveError()
+    {
+        var entrada = new MedicamentoActualizarDto
+        {
+            Id = 17, Nombre = "Ibuprofeno", Presentacion = "Caja",
+            IdClasificacion = 6, Concentracion = "400 mg",
+            Precio = 18.75m, Stock = 32, IdUsuario = 9
+        };
+        _validador.Setup(v => v.Validar(It.IsAny<Medicamento>())).Returns(Result.Ok());
+        _repository.Setup(r => r.Update(It.IsAny<Medicamento>())).Returns(0);
+
+        var resultado = CrearServicio().Actualizar(entrada);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("No se pudo actualizar el medicamento.", resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Medicamento>()), Times.Once);
+        _repository.Verify(r => r.Update(It.IsAny<Medicamento>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void Actualizar_ConValidacionRechazada_DevuelveElRechazoSinActualizar()
     {
         var rechazo = Result.Fail("Medicamento invalido.");
