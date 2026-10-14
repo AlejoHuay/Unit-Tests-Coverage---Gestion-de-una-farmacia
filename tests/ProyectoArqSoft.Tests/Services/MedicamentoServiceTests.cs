@@ -14,6 +14,20 @@ public class MedicamentoServiceTests
 {
 
     [Fact]
+    public void Crear_ConValidacionRechazada_DevuelveElRechazoSinInsertar()
+    {
+        var rechazo = Result.Fail("Medicamento invalido.");
+        _validador.Setup(v => v.Validar(It.IsAny<Medicamento>())).Returns(rechazo);
+
+        var resultado = CrearServicio().Crear("Paracetamol", "Caja", 5, "500 mg", 12.50m, 20, 9);
+
+        Assert.Same(rechazo, resultado);
+        _validador.Verify(v => v.Validar(It.IsAny<Medicamento>()), Times.Once);
+        // Sin llamadas verificadas al repositorio: tampoco se permite insertar.
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void Crear_ConDatosValidos_LimpiaCamposYRegistraElMedicamentoValidado()
     {
         Medicamento? validado = null;
