@@ -13,6 +13,20 @@ public class ClienteServiceTests
 {
 
     [Fact]
+    public void Eliminar_ConFilasAfectadas_EnviaAmbosIdsYDevuelveExito()
+    {
+        _repository.Setup(r => r.Delete(It.Is<Cliente>(
+            c => c.IdCliente == 17 && c.IdUsuario == 9))).Returns(1);
+
+        var resultado = CrearServicio().Eliminar(17, 9);
+
+        Assert.True(resultado.IsSuccess);
+        _repository.Verify(r => r.Delete(It.Is<Cliente>(
+            c => c.IdCliente == 17 && c.IdUsuario == 9)), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void Actualizar_SinFilasActualizadas_DevuelveError()
     {
         _validador.Setup(v => v.Validar(It.IsAny<Cliente>())).Returns(Result.Ok());
