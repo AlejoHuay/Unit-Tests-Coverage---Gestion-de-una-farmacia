@@ -78,6 +78,48 @@ public class VentaServiceCrearTests
     }
 
     [Fact]
+    public void Crear_ConDetallesNulos_DevuelveFalloSinConsultarDependencias()
+    {
+        var servicio = new VentaService(_repository.Object, _medicamentos.Object, _validador.Object);
+
+        // Null recorre el cortocircuito que una lista vacia no cubre.
+        var resultado = servicio.Crear(7, 3, "Efectivo", null!);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("Debe agregar al menos un medicamento.", resultado.Error);
+        _repository.VerifyNoOtherCalls();
+        _medicamentos.VerifyNoOtherCalls();
+        _validador.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void Crear_ConMedicamentoInexistente_DevuelveFalloSinValidarNiRegistrar()
+    {
+        _medicamentos.Setup(r => r.GetById(8)).Returns((Medicamento?)null);
+        var servicio = new VentaService(_repository.Object, _medicamentos.Object, _validador.Object);
+
+        var resultado = servicio.Crear(7, 3, "Efectivo", DetallesValidos());
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("Medicamento con ID 8 no encontrado.", resultado.Error);
+        VerificarConsultaMedicamentoYSinOtrasLlamadas();
+    }
+
+    [Fact]
+    public void Crear_ConStockInsuficiente_DevuelveFalloSinValidarNiRegistrar()
+    {
+        var servicio = PrepararServicioConMedicamento();
+        var detalles = DetallesValidos();
+        detalles[0].Cantidad = 11;
+
+        var resultado = servicio.Crear(7, 3, "Efectivo", detalles);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("Stock insuficiente para Paracetamol. Disponible: 10.", resultado.Error);
+        VerificarConsultaMedicamentoYSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void Crear_SiValidadorLanzaExcepcion_DevuelveSuMensajeSinRegistrar()
     {
         var servicio = PrepararServicioConMedicamento();

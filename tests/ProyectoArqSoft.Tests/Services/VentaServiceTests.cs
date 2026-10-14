@@ -4,12 +4,40 @@ using ProyectoArqSoft.Application.Interfaces;
 using ProyectoArqSoft.Application.Ports.Output;
 using ProyectoArqSoft.Application.Services;
 using ProyectoArqSoft.Domain.Models;
+using ProyectoArqSoft.Domain.Validators;
 using Xunit;
 
 namespace ProyectoArqSoft.Tests.Services;
 
 public class VentaServiceTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void EliminarLogicamente_EnviaAmbosIdsYDevuelveElMismoResultado(bool exito)
+    {
+        // IDs distintos permiten detectar si se intercambian los argumentos.
+        const int idVenta = 17;
+        const int idUsuarioEditor = 9;
+        var esperado = exito ? Result.Ok() : Result.Fail("La venta ya fue anulada.");
+        var repository = new Mock<IVentaRepository>(MockBehavior.Strict);
+        var medicamentoRepository = new Mock<IMedicamentoRepository>(MockBehavior.Strict);
+        var validador = new Mock<IResult<Venta>>(MockBehavior.Strict);
+        repository.Setup(repo => repo.AnularVentaLogicamente(idVenta, idUsuarioEditor))
+            .Returns(esperado);
+        var servicio = new VentaService(
+            repository.Object, medicamentoRepository.Object, validador.Object);
+
+        var resultado = servicio.EliminarLogicamente(idVenta, idUsuarioEditor);
+
+        // Tanto el exito como el fallo deben conservarse sin reemplazar el resultado.
+        Assert.Same(esperado, resultado);
+        repository.Verify(repo => repo.AnularVentaLogicamente(idVenta, idUsuarioEditor), Times.Once);
+        repository.VerifyNoOtherCalls();
+        medicamentoRepository.VerifyNoOtherCalls();
+        validador.VerifyNoOtherCalls();
+    }
+
     [Fact]
     public void ObtenerDetallesPorVenta_ConDetalles_EnviaElIdYDevuelveLaMismaLista()
     {
