@@ -13,6 +13,20 @@ public class ClienteServiceTests
 {
 
     [Fact]
+    public void Actualizar_ConValidacionRechazada_DevuelveElRechazoSinConsultarNiActualizar()
+    {
+        var rechazo = Result.Fail("Cliente invalido.");
+        _validador.Setup(v => v.Validar(It.IsAny<Cliente>())).Returns(rechazo);
+
+        var resultado = CrearServicio().Actualizar(
+            17, false, "123456", "Cliente", "cliente@correo.com", 9);
+
+        Assert.Same(rechazo, resultado);
+        _validador.Verify(v => v.Validar(It.IsAny<Cliente>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void Actualizar_ConNitDelMismoCliente_IgnoraOtrasFilasYActualizaLosDatosLimpios()
     {
         Cliente? validado = null;
