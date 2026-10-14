@@ -13,6 +13,24 @@ public class ClienteServiceTests
 {
 
     [Fact]
+    public void Actualizar_ConNitDeOtroCliente_ContinuaTrasElPropioIdYRechazaSinActualizar()
+    {
+        _validador.Setup(v => v.Validar(It.IsAny<Cliente>())).Returns(Result.Ok());
+        // Encontrar el propio cliente no debe impedir detectar otra fila duplicada.
+        _repository.Setup(r => r.GetAll("123456"))
+            .Returns(TablaClientes((17, "123456"), (21, "123456")));
+
+        var resultado = CrearServicio().Actualizar(
+            17, false, "123456", "Cliente", "cliente@correo.com", 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("Ya existe un cliente con ese NIT.", resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Cliente>()), Times.Once);
+        _repository.Verify(r => r.GetAll("123456"), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void Actualizar_ConValidacionRechazada_DevuelveElRechazoSinConsultarNiActualizar()
     {
         var rechazo = Result.Fail("Cliente invalido.");
