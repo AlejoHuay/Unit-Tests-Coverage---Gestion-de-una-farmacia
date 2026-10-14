@@ -14,6 +14,35 @@ public class MedicamentoServiceTests
 {
 
     [Fact]
+    public void Crear_ConDatosValidos_LimpiaCamposYRegistraElMedicamentoValidado()
+    {
+        Medicamento? validado = null;
+        Medicamento? insertado = null;
+        _validador.Setup(v => v.Validar(It.IsAny<Medicamento>()))
+            .Callback<Medicamento>(m => validado = m).Returns(Result.Ok());
+        _repository.Setup(r => r.Insert(It.IsAny<Medicamento>()))
+            .Callback<Medicamento>(m => insertado = m).Returns(1);
+
+        var resultado = CrearServicio().Crear(
+            "  Paracetamol   Forte  ", "  Caja   x10  ", 5, "  500   mg  ", 12.50m, 20, 9);
+
+        Assert.True(resultado.IsSuccess);
+        Assert.NotNull(validado);
+        Assert.Same(validado, insertado);
+        Assert.Equal(0, validado.Id);
+        Assert.Equal("Paracetamol Forte", validado.Nombre);
+        Assert.Equal("Caja x10", validado.Presentacion);
+        Assert.Equal(5, validado.IdClasificacion);
+        Assert.Equal("500 mg", validado.Concentracion);
+        Assert.Equal(12.50m, validado.Precio);
+        Assert.Equal(20, validado.Stock);
+        Assert.Equal(9, validado.IdUsuario);
+        _validador.Verify(v => v.Validar(It.IsAny<Medicamento>()), Times.Once);
+        _repository.Verify(r => r.Insert(It.IsAny<Medicamento>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void ObtenerDestacados_DevuelveLaTablaDelRepositorio()
     {
         var tabla = new DataTable();
