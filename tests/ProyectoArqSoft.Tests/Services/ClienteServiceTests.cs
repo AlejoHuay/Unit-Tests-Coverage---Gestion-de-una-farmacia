@@ -13,6 +13,23 @@ public class ClienteServiceTests
 {
 
     [Fact]
+    public void Crear_SinFilasInsertadas_DevuelveError()
+    {
+        _validador.Setup(v => v.Validar(It.IsAny<Cliente>())).Returns(Result.Ok());
+        _repository.Setup(r => r.GetAll("123456")).Returns(TablaClientes());
+        _repository.Setup(r => r.Insert(It.IsAny<Cliente>())).Returns(0);
+
+        var resultado = CrearServicio().Crear(false, "123456", "Cliente", "cliente@correo.com", 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("No se pudo registrar el cliente.", resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Cliente>()), Times.Once);
+        _repository.Verify(r => r.GetAll("123456"), Times.Once);
+        _repository.Verify(r => r.Insert(It.IsAny<Cliente>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void Crear_ConNitDuplicado_DevuelveErrorSinInsertar()
     {
         _validador.Setup(v => v.Validar(It.IsAny<Cliente>())).Returns(Result.Ok());
