@@ -12,6 +12,51 @@ namespace ProyectoArqSoft.Tests.Services;
 public class ClienteServiceTests
 {
 
+    private static DataTable TablaClientes(params (int Id, string? Nit)[] filas)
+    {
+        var tabla = new DataTable();
+        tabla.Columns.Add("id", typeof(int));
+        tabla.Columns.Add("nit", typeof(string));
+        foreach (var (id, nit) in filas)
+            tabla.Rows.Add(id, (object?)nit ?? DBNull.Value);
+        return tabla;
+    }
+
+    [Fact]
+    public void Crear_ConDatosValidos_ValidaAntesDeLimpiarYRegistraElCliente()
+    {
+        Cliente? validado = null;
+        Cliente? insertado = null;
+        _validador.Setup(v => v.Validar(It.IsAny<Cliente>()))
+            .Callback<Cliente>(c =>
+            {
+                // Capturar el estado al validar, antes de la limpieza del servicio.
+                Assert.Equal(" 123 456 ", c.Nit);
+                Assert.Equal("  Cliente   Prueba  ", c.RazonSocial);
+                Assert.Equal(" cliente @correo.com ", c.CorreoElectronico);
+                validado = c;
+            }).Returns(Result.Ok());
+        _repository.Setup(r => r.GetAll("123456")).Returns(TablaClientes());
+        _repository.Setup(r => r.Insert(It.IsAny<Cliente>()))
+            .Callback<Cliente>(c => insertado = c).Returns(1);
+
+        var resultado = CrearServicio().Crear(
+            false, " 123 456 ", "  Cliente   Prueba  ", " cliente @correo.com ", 9);
+
+        Assert.True(resultado.IsSuccess);
+        Assert.NotNull(insertado);
+        Assert.Same(validado, insertado);
+        Assert.Equal(0, insertado.IdCliente);
+        Assert.Equal(9, insertado.IdUsuario);
+        Assert.Equal("123456", insertado.Nit);
+        Assert.Equal("Cliente Prueba", insertado.RazonSocial);
+        Assert.Equal("cliente@correo.com", insertado.CorreoElectronico);
+        _validador.Verify(v => v.Validar(It.IsAny<Cliente>()), Times.Once);
+        _repository.Verify(r => r.GetAll("123456"), Times.Once);
+        _repository.Verify(r => r.Insert(It.IsAny<Cliente>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
     [Fact]
     public void ObtenerPorId_EnviaElIdYDevuelveElClienteDelRepositorio()
     {
