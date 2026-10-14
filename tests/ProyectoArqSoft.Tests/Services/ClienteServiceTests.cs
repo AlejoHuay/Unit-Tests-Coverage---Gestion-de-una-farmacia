@@ -13,6 +13,42 @@ public class ClienteServiceTests
 {
 
     [Fact]
+    public void Actualizar_ConNitDelMismoCliente_IgnoraOtrasFilasYActualizaLosDatosLimpios()
+    {
+        Cliente? validado = null;
+        Cliente? actualizado = null;
+        _validador.Setup(v => v.Validar(It.IsAny<Cliente>()))
+            .Callback<Cliente>(c =>
+            {
+                Assert.Equal(" 123 456 ", c.Nit);
+                Assert.Equal("  Razon   Editada  ", c.RazonSocial);
+                Assert.Equal(" nuevo @correo.com ", c.CorreoElectronico);
+                validado = c;
+            }).Returns(Result.Ok());
+        // DBNull y una coincidencia parcial no son duplicados; el propio ID tampoco.
+        _repository.Setup(r => r.GetAll("123456"))
+            .Returns(TablaClientes((21, null), (22, "1234567"), (17, " 123 456 ")));
+        _repository.Setup(r => r.Update(It.IsAny<Cliente>()))
+            .Callback<Cliente>(c => actualizado = c).Returns(1);
+
+        var resultado = CrearServicio().Actualizar(
+            17, false, " 123 456 ", "  Razon   Editada  ", " nuevo @correo.com ", 9);
+
+        Assert.True(resultado.IsSuccess);
+        Assert.NotNull(actualizado);
+        Assert.Same(validado, actualizado);
+        Assert.Equal(17, actualizado.IdCliente);
+        Assert.Equal(9, actualizado.IdUsuario);
+        Assert.Equal("123456", actualizado.Nit);
+        Assert.Equal("Razon Editada", actualizado.RazonSocial);
+        Assert.Equal("nuevo@correo.com", actualizado.CorreoElectronico);
+        _validador.Verify(v => v.Validar(It.IsAny<Cliente>()), Times.Once);
+        _repository.Verify(r => r.GetAll("123456"), Times.Once);
+        _repository.Verify(r => r.Update(It.IsAny<Cliente>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void Crear_SinFilasInsertadas_DevuelveError()
     {
         _validador.Setup(v => v.Validar(It.IsAny<Cliente>())).Returns(Result.Ok());
