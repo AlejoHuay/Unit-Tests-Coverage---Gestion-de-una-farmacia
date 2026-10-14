@@ -13,6 +13,19 @@ public class ClienteServiceTests
 {
 
     [Fact]
+    public void ObtenerPorId_EnviaElIdYDevuelveElClienteDelRepositorio()
+    {
+        var cliente = new Cliente { IdCliente = 17 };
+        _repository.Setup(r => r.GetById(17)).Returns(cliente);
+
+        var resultado = CrearServicio().ObtenerPorId(17);
+
+        Assert.Same(cliente, resultado);
+        _repository.Verify(r => r.GetById(17), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void ObtenerTodos_ConFiltro_EnviaElFiltroSinModificar()
     {
         const string filtro = "  Cliente de prueba  ";
