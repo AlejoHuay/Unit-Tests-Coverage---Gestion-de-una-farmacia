@@ -14,6 +14,21 @@ public class MedicamentoServiceTests
 {
 
     [Fact]
+    public void EliminarLogicamente_SinFilasAfectadas_DevuelveError()
+    {
+        _repository.Setup(r => r.Delete(It.Is<Medicamento>(
+            m => m.Id == 17 && m.IdUsuario == 9))).Returns(0);
+
+        var resultado = CrearServicio().EliminarLogicamente(17, 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("No se pudo eliminar el medicamento.", resultado.Error);
+        _repository.Verify(r => r.Delete(It.Is<Medicamento>(
+            m => m.Id == 17 && m.IdUsuario == 9)), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void EliminarLogicamente_ConFilasAfectadas_EnviaAmbosIdsYDevuelveExito()
     {
         _repository.Setup(r => r.Delete(It.Is<Medicamento>(
