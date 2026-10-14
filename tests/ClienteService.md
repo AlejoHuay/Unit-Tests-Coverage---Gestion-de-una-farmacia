@@ -88,9 +88,18 @@ dotnet test .\tests\ProyectoArqSoft.Tests\ProyectoArqSoft.Tests.csproj --filter 
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\Invoke-Coverage.ps1
 ```
 
-### Particularidad del equipo usado para la verificacion
+### Incidencia local resuelta
 
-Hay dos carpetas sin commit que declaran otra vez la clase Clasificacion:
+Las dos copias se compararon con el original y sus hashes SHA256 eran identicos.
+Se trasladaron fuera del proyecto a
+`%LOCALAPPDATA%/CodexBackups/Farmacia-Clasificacion-20261014-175046/`.
+El comando normal `tests/Invoke-Coverage.ps1` volvio a ejecutarse correctamente:
+90 casos aprobados, sin exclusiones temporales. Reporte de comprobacion:
+`coverage/runs/20261014-175047-152/html/index.html`.
+Ya no se necesita el procedimiento temporal de abajo; se conserva como registro
+de la primera verificacion.
+
+Habia dos carpetas sin commit que declaraban otra vez la clase Clasificacion:
 `Domain/Model/Clasificacion copy/` y `Domain/Model/Clasificacion copy 2/`.
 La ejecucion normal falla con CS0101/CS0111 antes de llegar a las pruebas.
 Esas copias se conservaron intactas y no forman parte de los commits.

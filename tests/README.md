@@ -1,7 +1,7 @@
 # Pruebas unitarias y cobertura
 
 La [guia de ClienteService](ClienteService.md) documenta los caminos de clientes,
-la cobertura verificada y la ejecucion con copias locales duplicadas.
+la cobertura verificada y la resolucion de las copias locales duplicadas.
 
 La [guia de MedicamentoService](MedicamentoService.md) relaciona sus pruebas
 con los caminos independientes y documenta la cobertura verificada del modulo.
