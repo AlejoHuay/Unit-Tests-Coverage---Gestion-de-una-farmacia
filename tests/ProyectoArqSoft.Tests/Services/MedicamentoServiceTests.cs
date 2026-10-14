@@ -14,6 +14,21 @@ public class MedicamentoServiceTests
 {
 
     [Fact]
+    public void Crear_SinFilasInsertadas_DevuelveError()
+    {
+        _validador.Setup(v => v.Validar(It.IsAny<Medicamento>())).Returns(Result.Ok());
+        _repository.Setup(r => r.Insert(It.IsAny<Medicamento>())).Returns(0);
+
+        var resultado = CrearServicio().Crear("Paracetamol", "Caja", 5, "500 mg", 12.50m, 20, 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("No se pudo registrar el medicamento.", resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Medicamento>()), Times.Once);
+        _repository.Verify(r => r.Insert(It.IsAny<Medicamento>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
     public void Crear_ConValidacionRechazada_DevuelveElRechazoSinInsertar()
     {
         var rechazo = Result.Fail("Medicamento invalido.");
