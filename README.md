@@ -5,9 +5,23 @@
 Proyecto de pruebas independiente con **xUnit + Coverlet + ReportGenerator** en
 [`tests/`](tests/README.md). Desde la raíz, ejecuta:
 
+Para generar y abrir el **reporte completo**, incluidas las pruebas de integración de `VentaRepository`, elige una de estas opciones según tu instalación:
+
+**Opción 1: PostgreSQL 17 en la ruta predeterminada (`C:\Program Files\PostgreSQL\17\bin`).**
+
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\Invoke-Coverage.ps1 -OpenReport
+powershell -NoProfile -ExecutionPolicy Bypass -File ./tests/Invoke-PostgresTests.ps1 -Coverage -OpenReport
 ```
+
+**Opción 2: PostgreSQL 18 indicando su ruta.**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\Invoke-PostgresTests.ps1 -PostgresBin "C:\Program Files\PostgreSQL\18\bin" -Coverage -OpenReport
+```
+
+Ambas opciones ejecutan todas las pruebas con una instancia temporal aislada de PostgreSQL y la eliminan al terminar. No necesitas ejecutar ambas.
+
+El comando `powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\Invoke-Coverage.ps1 -OpenReport` sigue disponible, pero por sí solo no prepara PostgreSQL y omite las pruebas que lo requieren.
 
 La guía explica cómo agregar pruebas, comparar reportes y enviar cobertura a SonarQube.
 
