@@ -1,5 +1,9 @@
 using System.Data;
+using System.Data.Common;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using Moq;
+using Moq.Protected;
 using Npgsql;
 using ProyectoArqSoft.Infrastructure.Persistence.Connection;
 using Xunit;
@@ -8,6 +12,41 @@ namespace ProyectoArqSoft.Tests.Infrastructure;
 
 public class PostgresDatabaseTests
 {
+    [Theory]
+    [InlineData("7", true, "7")]
+    [InlineData("7", false, "")]
+    [InlineData("invalido", true, "")]
+    [InlineData("0", true, "")]
+    [InlineData(null, true, "")]
+    public void BeginTransaction_ConIdentidad_ConfiguraAuditoriaSinConfirmarLaTransaccion(string? id, bool autenticado, string actor)
+    {
+        var claims = id == null ? Array.Empty<Claim>() : new[] { new Claim(ClaimTypes.NameIdentifier, id) };
+        var context = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(claims, autenticado ? "Tests" : null)),
+            TraceIdentifier = "solicitud-'prueba'"
+        };
+        context.Request.Path = "/clasificaciones/editar";
+        var mocks = new DatabaseMocks(context);
+
+        var resultado = mocks.Database.BeginTransaction(mocks.Connection.Object);
+
+        Assert.Same(mocks.Transaction.Object, resultado);
+        Assert.Same(resultado, mocks.Audit.Object.Transaction);
+        Assert.Equal("SELECT set_config('app.usuario_id', @actor, true), set_config('app.solicitud_id', @solicitud, true), set_config('app.motivo', @motivo, true)", mocks.Audit.Object.CommandText);
+        Assert.Collection(mocks.Audit.Object.Parameters.Cast<DbParameter>(),
+            p => { Assert.Equal("actor", p.ParameterName); Assert.Equal(actor, p.Value); },
+            p => { Assert.Equal("solicitud", p.ParameterName); Assert.Equal(context.TraceIdentifier, p.Value); },
+            p => { Assert.Equal("motivo", p.ParameterName); Assert.Equal(context.Request.Path.Value, p.Value); });
+        mocks.Audit.Verify(c => c.ExecuteNonQuery(), Times.Once);
+        mocks.Audit.Protected().Verify("Dispose", Times.Once(), ItExpr.IsAny<bool>());
+        mocks.Transaction.Verify(t => t.Commit(), Times.Never);
+        mocks.Transaction.Protected().Verify("Dispose", Times.Never(), ItExpr.IsAny<bool>());
+        mocks.Http.VerifyGet(h => h.HttpContext, Times.Once);
+        mocks.Http.VerifyNoOtherCalls();
+        mocks.Factory.Verify(f => f(), Times.Never);
+    }
+
     [Fact]
     public void NormalizeParameters_ConNull_ConservaParametroYAsignaDBNull()
     {
