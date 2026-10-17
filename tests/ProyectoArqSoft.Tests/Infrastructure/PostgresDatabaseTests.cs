@@ -12,6 +12,24 @@ namespace ProyectoArqSoft.Tests.Infrastructure;
 
 public class PostgresDatabaseTests
 {
+    [Fact]
+    public void ExecuteNonQuery_FallaCommit_PropagaErrorYLiberaRecursosSinReintentar()
+    {
+        var mocks = new DatabaseMocks();
+        var command = DatabaseMocks.Command();
+        command.Setup(c => c.ExecuteNonQuery()).Returns(1);
+        var error = new InvalidOperationException("confirmacion fallida");
+        mocks.Transaction.Setup(t => t.Commit()).Throws(error);
+
+        Assert.Same(error, Assert.Throws<InvalidOperationException>(() => mocks.Database.ExecuteNonQuery(command.Object)));
+
+        command.Verify(c => c.ExecuteNonQuery(), Times.Once);
+        mocks.Transaction.Verify(t => t.Commit(), Times.Once);
+        mocks.Transaction.Protected().Verify("Dispose", Times.Once(), ItExpr.IsAny<bool>());
+        mocks.Connection.Protected().Verify("Dispose", Times.Once(), ItExpr.IsAny<bool>());
+        command.Protected().Verify("Dispose", Times.Never(), ItExpr.IsAny<bool>());
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
