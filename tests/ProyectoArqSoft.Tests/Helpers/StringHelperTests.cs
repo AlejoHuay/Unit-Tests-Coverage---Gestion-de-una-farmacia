@@ -54,4 +54,13 @@ public class StringHelperTests
         Assert.Equal(esperado, StringHelper.LimpiarTexto(texto));
     }
 
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("  ácido\t fólico  ", "ÁCIDO FÓLICO")]
+    public void LimpiarTextoMayus_AusenciaYTextoMixto_DevuelveValorNormalizado(string? texto, string esperado)
+    {
+        Assert.Equal(esperado, StringHelper.LimpiarTextoMayus(texto));
+    }
+
 }
