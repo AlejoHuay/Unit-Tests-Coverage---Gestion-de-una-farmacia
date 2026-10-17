@@ -13,6 +13,35 @@ namespace ProyectoArqSoft.Tests.Infrastructure;
 public class PostgresDatabaseTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void BeginTransaction_SinUsuario_ConservaContextoOUsaRespaldo(bool hayContexto)
+    {
+        var context = hayContexto ? new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(),
+            TraceIdentifier = "solicitud-sin-usuario"
+        } : null;
+        if (context != null) context.Request.Path = "/sin-usuario";
+        var mocks = new DatabaseMocks(context);
+
+        Assert.Same(mocks.Transaction.Object, mocks.Database.BeginTransaction(mocks.Connection.Object));
+
+        Assert.Equal("", mocks.Audit.Object.Parameters["actor"].Value);
+        var solicitud = Assert.IsType<string>(mocks.Audit.Object.Parameters["solicitud"].Value);
+        if (hayContexto) Assert.Equal("solicitud-sin-usuario", solicitud);
+        else
+        {
+            Assert.True(Guid.TryParseExact(solicitud, "N", out var id));
+            Assert.NotEqual(Guid.Empty, id);
+        }
+        Assert.Equal(hayContexto ? "/sin-usuario" : "Operacion de repositorio", mocks.Audit.Object.Parameters["motivo"].Value);
+        mocks.Audit.Verify(c => c.ExecuteNonQuery(), Times.Once);
+        mocks.Audit.Protected().Verify("Dispose", Times.Once(), ItExpr.IsAny<bool>());
+        mocks.Http.VerifyGet(h => h.HttpContext, Times.Once);
+    }
+
+    [Theory]
     [InlineData("7", true, "7")]
     [InlineData("7", false, "")]
     [InlineData("invalido", true, "")]
