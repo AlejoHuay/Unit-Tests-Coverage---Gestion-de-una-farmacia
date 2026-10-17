@@ -13,6 +13,36 @@ public class RepositoryDbHelperTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void ExecuteReaderSingle_FallaLecturaOMapeador_PropagaErrorYLiberaLosTresRecursos(bool fallaMapeador)
+    {
+        var mocks = new DatabaseMocks();
+        var command = DatabaseMocks.Command();
+        var reader = new Mock<DbDataReader>(MockBehavior.Strict);
+        var mapper = new Mock<Func<DbDataReader, string>>(MockBehavior.Strict);
+        var error = new InvalidOperationException("lectura o mapeo fallido");
+        reader.Protected().Setup("Dispose", ItExpr.IsAny<bool>());
+        command.Protected().Setup<DbDataReader>("ExecuteDbDataReader", ItExpr.IsAny<CommandBehavior>()).Returns(reader.Object);
+        if (fallaMapeador)
+        {
+            reader.Setup(r => r.Read()).Returns(true);
+            mapper.Setup(m => m(reader.Object)).Throws(error);
+        }
+        else reader.Setup(r => r.Read()).Throws(error);
+
+        Assert.Same(error, Assert.Throws<InvalidOperationException>(() =>
+            RepositoryDbHelper.ExecuteReaderSingle(mocks.Database, command.Object, mapper.Object)));
+
+        reader.Verify(r => r.Read(), Times.Once);
+        mapper.Verify(m => m(reader.Object), fallaMapeador ? Times.Once() : Times.Never());
+        mapper.VerifyNoOtherCalls();
+        reader.Protected().Verify("Dispose", Times.Once(), ItExpr.IsAny<bool>());
+        command.Protected().Verify("Dispose", Times.Once(), ItExpr.IsAny<bool>());
+        mocks.Connection.Protected().Verify("Dispose", Times.Once(), ItExpr.IsAny<bool>());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void ExecuteReaderSingle_ConYSinFilas_MapeaSoloLaPrimeraOLaOmite(bool hayFilas)
     {
         var mocks = new DatabaseMocks();
