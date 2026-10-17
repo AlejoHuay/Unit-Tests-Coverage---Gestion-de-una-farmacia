@@ -184,4 +184,35 @@ public class ClasificacionServiceTests
         _repository.Verify(r => r.Update(It.IsAny<Clasificacion>()), Times.Once);
         VerificarSinOtrasLlamadas();
     }
+
+    [Fact]
+    public void Actualizar_ConDatosValidos_ConservaIdsYLimpiaAntesDeValidar()
+    {
+        Clasificacion? validada = null;
+        var secuencia = new MockSequence();
+        _validador.InSequence(secuencia).Setup(v => v.Validar(It.IsAny<Clasificacion>()))
+            .Callback<Clasificacion>(c =>
+            {
+                Assert.Equal(17, c.Id);
+                Assert.Equal(9, c.IdUsuario);
+                Assert.Equal("Antiinflamatorios locales", c.Nombre);
+                Assert.Equal("Origen sintetico", c.Origen);
+                Assert.Equal("Descripcion actualizada", c.Descripcion);
+                validada = c;
+            }).Returns(Result.Ok());
+        _repository.InSequence(secuencia)
+            .Setup(r => r.ExisteNombreActivoExcluyendoId(17, "Antiinflamatorios locales")).Returns(false);
+        _repository.InSequence(secuencia).Setup(r => r.Update(It.IsAny<Clasificacion>()))
+            .Callback<Clasificacion>(c => Assert.Same(validada, c)).Returns(1);
+
+        var resultado = CrearServicio().Actualizar(
+            17, "  Antiinflamatorios   locales  ", "  Origen   sintetico  ", "  Descripcion   actualizada  ", 9);
+
+        Assert.True(resultado.IsSuccess);
+        Assert.Equal(string.Empty, resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Clasificacion>()), Times.Once);
+        _repository.Verify(r => r.ExisteNombreActivoExcluyendoId(17, "Antiinflamatorios locales"), Times.Once);
+        _repository.Verify(r => r.Update(It.IsAny<Clasificacion>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
 }
