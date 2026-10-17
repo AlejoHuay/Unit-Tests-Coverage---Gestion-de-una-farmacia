@@ -109,4 +109,22 @@ public class StringHelperTests
         Assert.Equal(esperado, StringHelper.NombrePareceFragmentado(nombre));
     }
 
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData("A Perez", true)]
+    [InlineData("Perez Li", true)]
+    [InlineData("Li Perez", true)]
+    [InlineData("DE Perez", false)]
+    [InlineData("Perez DE", false)]
+    [InlineData("Li Wu", false)]
+    [InlineData("Perez Gomez", false)]
+    [InlineData("Perez Li Gomez", true)]
+    [InlineData("Perez de Gomez", false)]
+    [InlineData("Perez", false)]
+    public void ApellidoPareceFragmentado_ReglasDeLongitudYConectores_ClasificaSegunContrato(string? apellido, bool esperado)
+    {
+        Assert.Equal(esperado, StringHelper.ApellidoPareceFragmentado(apellido));
+    }
+
 }
