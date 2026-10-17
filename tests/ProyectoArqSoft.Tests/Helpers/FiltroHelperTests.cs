@@ -53,4 +53,15 @@ public class FiltroHelperTests
         Assert.Equal(error, resultado.Error);
     }
 
+
+    [Theory]
+    [InlineData("Ácido 20 - forte", true)]
+    [InlineData("Ácido+20", false)]
+    public void ValidarFiltro_CaracteresPermitidos_DevuelveResultadoCorrespondiente(string filtro, bool valido)
+    {
+        var resultado = FiltroHelper.ValidarFiltro(filtro);
+        Assert.Equal(valido, resultado.IsSuccess);
+        Assert.Equal(valido ? "" : "Criterio inválido.", resultado.Error);
+    }
+
 }
