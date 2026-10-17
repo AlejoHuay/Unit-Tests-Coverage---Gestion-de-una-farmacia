@@ -41,4 +41,16 @@ public class FiltroHelperTests
         Assert.Equal(error, resultado.Error);
     }
 
+
+    [Theory]
+    [InlineData("a", "El criterio debe tener al menos 2 caracteres.")]
+    [InlineData("abcde", "El criterio no puede tener más de 4 caracteres.")]
+    [InlineData("ab", "")]
+    public void ValidarFiltro_LimitesPersonalizados_UsaLosArgumentos(string filtro, string error)
+    {
+        var resultado = FiltroHelper.ValidarFiltro(filtro, 2, 4);
+        Assert.Equal(error.Length == 0, resultado.IsSuccess);
+        Assert.Equal(error, resultado.Error);
+    }
+
 }
