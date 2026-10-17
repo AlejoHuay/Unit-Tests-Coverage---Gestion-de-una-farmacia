@@ -244,4 +244,21 @@ public class ClasificacionServiceTests
         _repository.Verify(r => r.Delete(It.Is<Clasificacion>(c => c.Id == 17 && c.IdUsuario == 9)), Times.Once);
         VerificarSinOtrasLlamadas();
     }
+
+    [Fact]
+    public void EliminarLogicamente_SinMedicamentosActivos_EnviaAmbosIdsYDevuelveExito()
+    {
+        var secuencia = new MockSequence();
+        _repository.InSequence(secuencia).Setup(r => r.TieneMedicamentosActivosAsociados(17)).Returns(false);
+        _repository.InSequence(secuencia)
+            .Setup(r => r.Delete(It.Is<Clasificacion>(c => c.Id == 17 && c.IdUsuario == 9))).Returns(1);
+
+        var resultado = CrearServicio().EliminarLogicamente(17, 9);
+
+        Assert.True(resultado.IsSuccess);
+        Assert.Equal(string.Empty, resultado.Error);
+        _repository.Verify(r => r.TieneMedicamentosActivosAsociados(17), Times.Once);
+        _repository.Verify(r => r.Delete(It.Is<Clasificacion>(c => c.Id == 17 && c.IdUsuario == 9)), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
 }
