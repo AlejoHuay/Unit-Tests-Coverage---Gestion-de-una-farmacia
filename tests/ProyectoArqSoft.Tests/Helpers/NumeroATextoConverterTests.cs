@@ -25,4 +25,11 @@ public class NumeroATextoConverterTests
         Assert.Equal(esperado, NumeroATextoConverter.ConvertirDecimalATexto(numero));
     }
 
+
+    [Fact]
+    public void ConvertirDecimalATexto_ConFraccion_TruncaSinRedondear()
+    {
+        Assert.Equal("diecinueve", NumeroATextoConverter.ConvertirDecimalATexto(19.99m));
+    }
+
 }
