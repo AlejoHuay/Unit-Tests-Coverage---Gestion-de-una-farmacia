@@ -135,4 +135,25 @@ public class PostgresDatabaseIntegrationTests
         }
     }
 
+
+    [PostgresTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExecuteNonQuery_FalloSQL_RevierteCambiosYCierraSoloConexionPropia(bool usarPrestada)
+    {
+        using var db = new PostgresHelperTestDatabase();
+        using var prestada = usarPrestada ? db.Source.OpenConnection() : null;
+        using var command = new NpgsqlCommand("INSERT INTO prueba VALUES (1, 'parcial'); SELECT 1 / 0", prestada);
+        var error = Assert.Throws<PostgresException>(() => db.Database().ExecuteNonQuery(command));
+        Assert.Equal(PostgresErrorCodes.DivisionByZero, error.SqlState);
+        Assert.Equal(0L, db.Scalar("SELECT count(*) FROM prueba"));
+        if (prestada != null)
+        {
+            Assert.Equal(ConnectionState.Open, prestada.State);
+            using var siguiente = prestada.BeginTransaction();
+            siguiente.Rollback();
+        }
+        else Assert.Equal(ConnectionState.Closed, command.Connection!.State);
+    }
+
 }
