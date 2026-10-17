@@ -34,4 +34,21 @@ public class RepositoryDbHelperTests
         accessor.VerifyNoOtherCalls();
     }
 
+
+    [PostgresTheory]
+    [InlineData("SELECT 7", "valor")]
+    [InlineData("SELECT NULL::integer", "dbnull")]
+    [InlineData("SELECT 7 WHERE false", "sin-filas")]
+    public void ExecuteScalar_ResultadoDelServidor_ConservaValorYLiberaRecursos(string sql, string caso)
+    {
+        using var db = new PostgresHelperTestDatabase();
+        using var command = new NpgsqlCommand(sql);
+        var resultado = RepositoryDbHelper.ExecuteScalar(db.Database(), command);
+        if (caso == "valor") Assert.Equal(7, resultado);
+        else if (caso == "dbnull") Assert.Same(DBNull.Value, resultado);
+        else Assert.Null(resultado);
+        Assert.Throws<ObjectDisposedException>(() => command.ExecuteScalar());
+        Assert.Equal(ConnectionState.Closed, command.Connection!.State);
+    }
+
 }
