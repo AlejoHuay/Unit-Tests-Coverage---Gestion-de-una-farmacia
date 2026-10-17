@@ -29,4 +29,15 @@ public class FiltroSqlHelperTests
         Assert.Equal(esperado, resultado);
     }
 
+
+    [Fact]
+    public void AgregarParametrosLike_SinPalabras_NoModificaParametrosExistentes()
+    {
+        using var command = new NpgsqlCommand();
+        var previo = command.Parameters.AddWithValue("id", 7);
+        FiltroSqlHelper.AgregarParametrosLike(command, "  ");
+        Assert.Same(previo, Assert.Single(command.Parameters.Cast<NpgsqlParameter>()));
+        Assert.Equal(7, previo.Value);
+    }
+
 }
