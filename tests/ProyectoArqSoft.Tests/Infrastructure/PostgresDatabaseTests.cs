@@ -54,4 +54,18 @@ public class PostgresDatabaseTests
         }
     }
 
+
+    [Fact]
+    public void CreateConnection_ConDataSource_DevuelveConexionesIndependientesCerradas()
+    {
+        using var source = NpgsqlDataSource.Create("Host=127.0.0.1;Port=1;Database=prueba;Username=prueba;Pooling=false");
+        var database = new PostgresDatabase(source, new HttpContextAccessor());
+        using var primera = database.CreateConnection();
+        using var segunda = database.CreateConnection();
+        Assert.NotSame(primera, segunda);
+        Assert.Equal(ConnectionState.Closed, primera.State);
+        Assert.Equal(ConnectionState.Closed, segunda.State);
+        Assert.Equal("prueba", primera.Database);
+    }
+
 }
