@@ -85,4 +85,23 @@ public class PostgresDatabaseIntegrationTests
         accessor.VerifyNoOtherCalls();
     }
 
+
+    [PostgresFact]
+    public void BeginTransaction_FalloDelContexto_PropagaExcepcionYPermiteOtraTransaccion()
+    {
+        using var db = new PostgresHelperTestDatabase();
+        var fallo = new InvalidOperationException("fallo controlado del contexto");
+        var accessor = new Mock<IHttpContextAccessor>(MockBehavior.Strict);
+        accessor.SetupGet(a => a.HttpContext).Throws(fallo);
+        using var connection = db.Source.OpenConnection();
+        Assert.Same(fallo, Assert.Throws<InvalidOperationException>(() => db.Database(accessor.Object).BeginTransaction(connection)));
+        Assert.Equal(ConnectionState.Open, connection.State);
+        using var nueva = connection.BeginTransaction();
+        using var command = new NpgsqlCommand("SELECT 1", connection, nueva);
+        Assert.Equal(1, command.ExecuteScalar());
+        nueva.Commit();
+        accessor.VerifyGet(a => a.HttpContext, Times.Once);
+        accessor.VerifyNoOtherCalls();
+    }
+
 }
