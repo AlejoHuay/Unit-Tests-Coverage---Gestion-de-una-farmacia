@@ -69,4 +69,20 @@ public class PostgresDatabaseIntegrationTests
         accessor.VerifyNoOtherCalls();
     }
 
+
+    [PostgresFact]
+    public void BeginTransaction_SinIdentidad_UsaActorVacio()
+    {
+        using var db = new PostgresHelperTestDatabase();
+        var context = new DefaultHttpContext { User = new ClaimsPrincipal() };
+        var accessor = new Mock<IHttpContextAccessor>(MockBehavior.Strict);
+        accessor.SetupGet(a => a.HttpContext).Returns(context);
+        using var connection = db.Source.OpenConnection();
+        using var transaction = db.Database(accessor.Object).BeginTransaction(connection);
+        using var command = new NpgsqlCommand("SELECT current_setting('app.usuario_id')", connection, transaction);
+        Assert.Equal("", command.ExecuteScalar());
+        accessor.VerifyGet(a => a.HttpContext, Times.Once);
+        accessor.VerifyNoOtherCalls();
+    }
+
 }
