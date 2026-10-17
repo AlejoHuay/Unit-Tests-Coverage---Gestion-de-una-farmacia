@@ -36,4 +36,13 @@ public class StringHelperTests
         Assert.Equal(esperado, StringHelper.LimpiarEspacios(texto));
     }
 
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("  CI\t 123\r\nLP  ", "CI123LP")]
+    public void QuitarEspacios_AusenciaYTextoMixto_DevuelveValorNormalizado(string? texto, string esperado)
+    {
+        Assert.Equal(esperado, StringHelper.QuitarEspacios(texto));
+    }
+
 }
