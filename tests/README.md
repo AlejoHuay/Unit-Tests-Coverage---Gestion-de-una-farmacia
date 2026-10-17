@@ -1,5 +1,8 @@
 # Pruebas unitarias y cobertura
 
+La [guia de ClasificacionService](ClasificacionService.md) documenta sus 14 casos,
+los caminos independientes, las tres formulas de complejidad y la cobertura verificada.
+
 La [guia de ClienteService](ClienteService.md) documenta los caminos de clientes,
 la cobertura verificada y la resolucion de las copias locales duplicadas.
 
