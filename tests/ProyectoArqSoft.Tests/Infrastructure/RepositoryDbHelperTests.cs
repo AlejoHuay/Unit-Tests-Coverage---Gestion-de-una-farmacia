@@ -97,4 +97,30 @@ public class RepositoryDbHelperTests
         Assert.Equal(ConnectionState.Closed, command.Connection!.State);
     }
 
+
+    [PostgresTheory]
+    [InlineData("nonquery")]
+    [InlineData("scalar")]
+    [InlineData("reader")]
+    public void Operaciones_ErrorSQL_PropaganErrorYDisponenRecursos(string operacion)
+    {
+        using var db = new PostgresHelperTestDatabase();
+        using var command = new NpgsqlCommand("SELECT 1 / 0");
+        var error = Assert.Throws<PostgresException>(() =>
+        {
+            switch (operacion)
+            {
+                case "nonquery": RepositoryDbHelper.ExecuteNonQuery(db.Database(), command); break;
+                case "scalar": RepositoryDbHelper.ExecuteScalar(db.Database(), command); break;
+                default:
+                    RepositoryDbHelper.ExecuteReaderSingle<string>(db.Database(), command,
+                        _ => throw new InvalidOperationException("No debe mapear una consulta fallida."));
+                    break;
+            }
+        });
+        Assert.Equal(PostgresErrorCodes.DivisionByZero, error.SqlState);
+        Assert.Throws<ObjectDisposedException>(() => command.ExecuteScalar());
+        Assert.Equal(ConnectionState.Closed, command.Connection!.State);
+    }
+
 }
