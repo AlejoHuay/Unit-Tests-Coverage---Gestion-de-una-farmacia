@@ -51,4 +51,30 @@ public class RepositoryDbHelperTests
         Assert.Equal(ConnectionState.Closed, command.Connection!.State);
     }
 
+
+    [PostgresTheory]
+    [InlineData(0)]
+    [InlineData(2)]
+    public void ExecuteReaderSingle_ConYSinFilas_InvocaMapeadorSoloParaLaPrimera(int filas)
+    {
+        using var db = new PostgresHelperTestDatabase();
+        using var command = new NpgsqlCommand("SELECT n FROM generate_series(1, @filas) n ORDER BY n");
+        command.Parameters.AddWithValue("filas", filas);
+        NpgsqlDataReader? capturado = null;
+        var mapper = new Mock<Func<NpgsqlDataReader, string>>(MockBehavior.Strict);
+        if (filas > 0)
+            mapper.Setup(m => m(It.IsAny<NpgsqlDataReader>())).Returns((NpgsqlDataReader reader) =>
+            {
+                capturado = reader;
+                return "fila-" + reader.GetInt32(0);
+            });
+        var resultado = RepositoryDbHelper.ExecuteReaderSingle(db.Database(), command, mapper.Object);
+        Assert.Equal(filas == 0 ? null : "fila-1", resultado);
+        mapper.Verify(m => m(It.IsAny<NpgsqlDataReader>()), filas == 0 ? Times.Never() : Times.Once());
+        mapper.VerifyNoOtherCalls();
+        if (capturado != null) Assert.True(capturado.IsClosed);
+        Assert.Throws<ObjectDisposedException>(() => command.ExecuteScalar());
+        Assert.Equal(ConnectionState.Closed, command.Connection!.State);
+    }
+
 }
