@@ -72,4 +72,13 @@ public class StringHelperTests
         Assert.Equal(esperado, StringHelper.LimpiarTextoMinus(texto));
     }
 
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("CI 12-3A\t.4", "1234")]
+    public void SoloNumeros_AusenciaYTextoMixto_DevuelveValorNormalizado(string? texto, string esperado)
+    {
+        Assert.Equal(esperado, StringHelper.SoloNumeros(texto));
+    }
+
 }
