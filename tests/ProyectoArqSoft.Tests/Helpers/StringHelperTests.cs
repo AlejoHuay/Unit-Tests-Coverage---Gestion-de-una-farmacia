@@ -90,4 +90,23 @@ public class StringHelperTests
         Assert.Equal(esperado, StringHelper.LimpiarCI(texto));
     }
 
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData("A B", true)]
+    [InlineData("Ana X", true)]
+    [InlineData("X Ana", true)]
+    [InlineData("DE Ana", false)]
+    [InlineData("Ana DE", false)]
+    [InlineData("Ana Maria", false)]
+    [InlineData("Al Li", false)]
+    [InlineData("Ana Li Wu", true)]
+    [InlineData("Ana DE Maria", false)]
+    [InlineData("Ana Maria Jose Luis", false)]
+    [InlineData("X Ana Maria", false)]
+    public void NombrePareceFragmentado_ReglasDeLongitudYConectores_ClasificaSegunContrato(string? nombre, bool esperado)
+    {
+        Assert.Equal(esperado, StringHelper.NombrePareceFragmentado(nombre));
+    }
+
 }
