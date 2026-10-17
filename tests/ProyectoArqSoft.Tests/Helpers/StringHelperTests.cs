@@ -27,4 +27,13 @@ public class StringHelperTests
         Assert.Equal("Ana   Maria", StringHelper.Limpiar(" Ana   Maria "));
     }
 
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("  Ana\t \r\nMaria  ", "Ana Maria")]
+    public void LimpiarEspacios_AusenciaYTextoMixto_DevuelveValorNormalizado(string? texto, string esperado)
+    {
+        Assert.Equal(esperado, StringHelper.LimpiarEspacios(texto));
+    }
+
 }
