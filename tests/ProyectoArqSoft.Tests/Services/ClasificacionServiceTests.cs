@@ -48,4 +48,17 @@ public class ClasificacionServiceTests
         _repository.Verify(r => r.GetAll(filtro), Times.Once);
         VerificarSinOtrasLlamadas();
     }
+
+    [Fact]
+    public void ObtenerPorId_EnviaElIdYDevuelveLaClasificacionDelRepositorio()
+    {
+        var clasificacion = new Clasificacion { Id = 17, Nombre = "Analgesicos" };
+        _repository.Setup(r => r.GetById(17)).Returns(clasificacion);
+
+        var resultado = CrearServicio().ObtenerPorId(17);
+
+        Assert.Same(clasificacion, resultado);
+        _repository.Verify(r => r.GetById(17), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
 }
