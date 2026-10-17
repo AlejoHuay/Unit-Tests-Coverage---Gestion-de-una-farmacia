@@ -228,4 +228,20 @@ public class ClasificacionServiceTests
         _repository.Verify(r => r.TieneMedicamentosActivosAsociados(17), Times.Once);
         VerificarSinOtrasLlamadas();
     }
+
+    [Fact]
+    public void EliminarLogicamente_SinFilasEliminadas_DevuelveError()
+    {
+        _repository.Setup(r => r.TieneMedicamentosActivosAsociados(17)).Returns(false);
+        _repository.Setup(r => r.Delete(It.Is<Clasificacion>(c => c.Id == 17 && c.IdUsuario == 9)))
+            .Returns(0);
+
+        var resultado = CrearServicio().EliminarLogicamente(17, 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("No se pudo eliminar la clasificación.", resultado.Error);
+        _repository.Verify(r => r.TieneMedicamentosActivosAsociados(17), Times.Once);
+        _repository.Verify(r => r.Delete(It.Is<Clasificacion>(c => c.Id == 17 && c.IdUsuario == 9)), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
 }
