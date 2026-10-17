@@ -17,4 +17,15 @@ public class FiltroHelperTests
         Assert.Equal("Ácido 20", FiltroHelper.LimpiarFiltro(" \tÁcido \r\n 20  "));
     }
 
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(" \t ")]
+    public void ValidarFiltro_SinCriterio_DevuelveExito(string? filtro)
+    {
+        var resultado = FiltroHelper.ValidarFiltro(filtro!);
+        Assert.True(resultado.IsSuccess);
+        Assert.Empty(resultado.Error);
+    }
+
 }
