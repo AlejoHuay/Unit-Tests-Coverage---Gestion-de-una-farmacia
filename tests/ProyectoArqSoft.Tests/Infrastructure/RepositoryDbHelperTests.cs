@@ -11,6 +11,37 @@ namespace ProyectoArqSoft.Tests.Infrastructure;
 public class RepositoryDbHelperTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExecuteReaderSingle_ConYSinFilas_MapeaSoloLaPrimeraOLaOmite(bool hayFilas)
+    {
+        var mocks = new DatabaseMocks();
+        var command = DatabaseMocks.Command();
+        var reader = new Mock<DbDataReader>(MockBehavior.Strict);
+        reader.SetupSequence(r => r.Read()).Returns(hayFilas).Returns(true).Returns(false);
+        reader.Setup(r => r.GetInt32(0)).Returns(7);
+        reader.Protected().Setup("Dispose", ItExpr.IsAny<bool>());
+        command.Protected().Setup<DbDataReader>("ExecuteDbDataReader", ItExpr.IsAny<CommandBehavior>()).Returns(reader.Object);
+        var mapper = new Mock<Func<DbDataReader, string>>(MockBehavior.Strict);
+        if (hayFilas) mapper.Setup(m => m(reader.Object)).Returns((DbDataReader r) => "fila-" + r.GetInt32(0));
+
+        var resultado = RepositoryDbHelper.ExecuteReaderSingle(mocks.Database, command.Object, mapper.Object);
+
+        Assert.Equal(hayFilas ? "fila-7" : null, resultado);
+        mapper.Verify(m => m(reader.Object), hayFilas ? Times.Once() : Times.Never());
+        mapper.VerifyNoOtherCalls();
+        reader.Verify(r => r.Read(), Times.Once);
+        reader.Verify(r => r.GetInt32(0), hayFilas ? Times.Once() : Times.Never());
+        command.Protected().Verify("ExecuteDbDataReader", Times.Once(), CommandBehavior.Default);
+        reader.Protected().Verify("Dispose", Times.Once(), ItExpr.IsAny<bool>());
+        command.Protected().Verify("Dispose", Times.Once(), ItExpr.IsAny<bool>());
+        mocks.Connection.Protected().Verify("Dispose", Times.Once(), ItExpr.IsAny<bool>());
+        mocks.Connection.Protected().Verify("BeginDbTransaction", Times.Never(), ItExpr.IsAny<IsolationLevel>());
+        mocks.Factory.Verify(f => f(), Times.Once);
+        mocks.Connection.Verify(c => c.Open(), Times.Once);
+    }
+
+    [Theory]
     [InlineData("valor")]
     [InlineData("null-sql")]
     [InlineData("sin-filas")]
