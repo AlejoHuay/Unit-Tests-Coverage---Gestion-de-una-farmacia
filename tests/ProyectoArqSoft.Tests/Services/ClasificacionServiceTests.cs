@@ -34,4 +34,18 @@ public class ClasificacionServiceTests
         _repository.Verify(r => r.GetAll(), Times.Once);
         VerificarSinOtrasLlamadas();
     }
+
+    [Fact]
+    public void ObtenerTodos_ConFiltro_EnviaElFiltroSinModificar()
+    {
+        const string filtro = "  Analgesicos   adultos  ";
+        var tabla = new DataTable();
+        _repository.Setup(r => r.GetAll(filtro)).Returns(tabla);
+
+        var resultado = CrearServicio().ObtenerTodos(filtro);
+
+        Assert.Same(tabla, resultado);
+        _repository.Verify(r => r.GetAll(filtro), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
 }
