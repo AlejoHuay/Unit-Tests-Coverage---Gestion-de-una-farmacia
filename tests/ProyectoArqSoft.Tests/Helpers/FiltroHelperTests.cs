@@ -28,4 +28,17 @@ public class FiltroHelperTests
         Assert.Empty(resultado.Error);
     }
 
+
+    [Theory]
+    [InlineData(2, "El criterio debe tener al menos 3 caracteres.")]
+    [InlineData(3, "")]
+    [InlineData(45, "")]
+    [InlineData(46, "El criterio no puede tener más de 45 caracteres.")]
+    public void ValidarFiltro_LimitesPredeterminados_MideDespuesDeLimpiar(int longitud, string error)
+    {
+        var resultado = FiltroHelper.ValidarFiltro("  " + new string('a', longitud) + "  ");
+        Assert.Equal(error.Length == 0, resultado.IsSuccess);
+        Assert.Equal(error, resultado.Error);
+    }
+
 }
