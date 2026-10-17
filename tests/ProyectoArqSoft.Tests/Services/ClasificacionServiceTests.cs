@@ -167,4 +167,21 @@ public class ClasificacionServiceTests
         _repository.Verify(r => r.ExisteNombreActivoExcluyendoId(17, "Analgesicos"), Times.Once);
         VerificarSinOtrasLlamadas();
     }
+
+    [Fact]
+    public void Actualizar_SinFilasActualizadas_DevuelveError()
+    {
+        _validador.Setup(v => v.Validar(It.IsAny<Clasificacion>())).Returns(Result.Ok());
+        _repository.Setup(r => r.ExisteNombreActivoExcluyendoId(17, "Analgesicos")).Returns(false);
+        _repository.Setup(r => r.Update(It.IsAny<Clasificacion>())).Returns(0);
+
+        var resultado = CrearServicio().Actualizar(17, "Analgesicos", "Sintetico", "Tratamiento del dolor", 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("No se pudo actualizar la clasificación.", resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Clasificacion>()), Times.Once);
+        _repository.Verify(r => r.ExisteNombreActivoExcluyendoId(17, "Analgesicos"), Times.Once);
+        _repository.Verify(r => r.Update(It.IsAny<Clasificacion>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
 }
