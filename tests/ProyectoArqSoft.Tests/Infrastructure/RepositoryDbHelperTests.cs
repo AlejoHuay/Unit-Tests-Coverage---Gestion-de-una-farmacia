@@ -11,6 +11,36 @@ namespace ProyectoArqSoft.Tests.Infrastructure;
 public class RepositoryDbHelperTests
 {
     [Theory]
+    [InlineData("escritura")]
+    [InlineData("escalar")]
+    [InlineData("lector")]
+    public void EntradasNpgsql_FallaCreacionDeConexion_DisponenElComandoRecibido(string operacion)
+    {
+        var mocks = new DatabaseMocks();
+        using var command = new NpgsqlCommand("SELECT 1");
+        var error = new InvalidOperationException("no se pudo crear la conexion");
+        mocks.Factory.Setup(f => f()).Throws(error);
+
+        Assert.Same(error, Assert.Throws<InvalidOperationException>(() =>
+        {
+            switch (operacion)
+            {
+                case "escritura": RepositoryDbHelper.ExecuteNonQuery(mocks.Database, command); break;
+                case "escalar": RepositoryDbHelper.ExecuteScalar(mocks.Database, command); break;
+                default:
+                    RepositoryDbHelper.ExecuteReaderSingle<string>(mocks.Database, command,
+                        _ => throw new Xunit.Sdk.XunitException("No debe invocar el mapeador."));
+                    break;
+            }
+        }));
+
+        Assert.Throws<ObjectDisposedException>(() => command.ExecuteScalar());
+        mocks.Factory.Verify(f => f(), Times.Once);
+        mocks.Connection.Verify(c => c.Open(), Times.Never);
+        mocks.Connection.Protected().Verify("Dispose", Times.Never(), ItExpr.IsAny<bool>());
+    }
+
+    [Theory]
     [InlineData("escritura", false)]
     [InlineData("escalar", false)]
     [InlineData("lector", false)]
