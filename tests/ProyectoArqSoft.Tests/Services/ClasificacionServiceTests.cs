@@ -74,4 +74,19 @@ public class ClasificacionServiceTests
         _validador.Verify(v => v.Validar(It.IsAny<Clasificacion>()), Times.Once);
         VerificarSinOtrasLlamadas();
     }
+
+    [Fact]
+    public void Crear_ConNombreActivoDuplicado_DevuelveErrorSinInsertar()
+    {
+        _validador.Setup(v => v.Validar(It.IsAny<Clasificacion>())).Returns(Result.Ok());
+        _repository.Setup(r => r.ExisteNombreActivo("Analgesicos")).Returns(true);
+
+        var resultado = CrearServicio().Crear("  Analgesicos  ", "Sintetico", "Tratamiento del dolor", 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("Ya existe una clasificación activa con ese nombre.", resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Clasificacion>()), Times.Once);
+        _repository.Verify(r => r.ExisteNombreActivo("Analgesicos"), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
 }
