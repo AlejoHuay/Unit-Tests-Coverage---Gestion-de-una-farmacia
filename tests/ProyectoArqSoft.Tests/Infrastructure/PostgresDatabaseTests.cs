@@ -13,6 +13,25 @@ namespace ProyectoArqSoft.Tests.Infrastructure;
 public class PostgresDatabaseTests
 {
     [Fact]
+    public void ExecuteNonQuery_FallaApertura_LiberaConexionPropiaSinEjecutarNiIniciarTransaccion()
+    {
+        var mocks = new DatabaseMocks();
+        var command = DatabaseMocks.Command();
+        var error = new InvalidOperationException("apertura fallida");
+        mocks.Connection.Setup(c => c.Open()).Throws(error);
+
+        Assert.Same(error, Assert.Throws<InvalidOperationException>(() => mocks.Database.ExecuteNonQuery(command.Object)));
+
+        mocks.Factory.Verify(f => f(), Times.Once);
+        mocks.Connection.Verify(c => c.Open(), Times.Once);
+        mocks.Connection.Protected().Verify("BeginDbTransaction", Times.Never(), ItExpr.IsAny<IsolationLevel>());
+        mocks.Connection.Protected().Verify("Dispose", Times.Once(), ItExpr.IsAny<bool>());
+        command.Verify(c => c.ExecuteNonQuery(), Times.Never);
+        command.Protected().Verify("Dispose", Times.Never(), ItExpr.IsAny<bool>());
+        mocks.Http.VerifyGet(h => h.HttpContext, Times.Never);
+    }
+
+    [Fact]
     public void BeginTransaction_EntradaNpgsqlConConexionCerrada_PropagaErrorSinIntentarAuditoria()
     {
         var mocks = new DatabaseMocks();
