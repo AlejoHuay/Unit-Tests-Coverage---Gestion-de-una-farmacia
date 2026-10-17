@@ -215,4 +215,17 @@ public class ClasificacionServiceTests
         _repository.Verify(r => r.Update(It.IsAny<Clasificacion>()), Times.Once);
         VerificarSinOtrasLlamadas();
     }
+
+    [Fact]
+    public void EliminarLogicamente_ConMedicamentosActivos_DevuelveErrorSinEliminar()
+    {
+        _repository.Setup(r => r.TieneMedicamentosActivosAsociados(17)).Returns(true);
+
+        var resultado = CrearServicio().EliminarLogicamente(17, 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("No se puede eliminar la clasificación porque tiene medicamentos activos asociados.", resultado.Error);
+        _repository.Verify(r => r.TieneMedicamentosActivosAsociados(17), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
 }
