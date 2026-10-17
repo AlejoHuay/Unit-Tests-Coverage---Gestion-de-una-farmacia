@@ -13,6 +13,23 @@ namespace ProyectoArqSoft.Tests.Infrastructure;
 public class PostgresDatabaseTests
 {
     [Fact]
+    public void ExecuteNonQuery_EntradaNpgsqlFallaCreacion_ConservaElComandoDelLlamador()
+    {
+        var mocks = new DatabaseMocks();
+        using var command = new NpgsqlCommand("SELECT 1");
+        var error = new InvalidOperationException("no se pudo crear la conexion");
+        mocks.Factory.Setup(f => f()).Throws(error);
+
+        Assert.Same(error, Assert.Throws<InvalidOperationException>(() => mocks.Database.ExecuteNonQuery(command)));
+
+        mocks.Factory.Verify(f => f(), Times.Once);
+        mocks.Connection.Verify(c => c.Open(), Times.Never);
+        mocks.Http.VerifyGet(h => h.HttpContext, Times.Never);
+        // Un comando dispuesto lanzaria ObjectDisposedException, no este error de conexion ausente.
+        Assert.Throws<InvalidOperationException>(() => command.ExecuteScalar());
+    }
+
+    [Fact]
     public void ExecuteNonQuery_FallaCommit_PropagaErrorYLiberaRecursosSinReintentar()
     {
         var mocks = new DatabaseMocks();
