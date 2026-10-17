@@ -81,4 +81,13 @@ public class StringHelperTests
         Assert.Equal(esperado, StringHelper.SoloNumeros(texto));
     }
 
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData(" 12\t3 lp\r\n ", "123LP")]
+    public void LimpiarCI_AusenciaYTextoMixto_DevuelveValorNormalizado(string? texto, string esperado)
+    {
+        Assert.Equal(esperado, StringHelper.LimpiarCI(texto));
+    }
+
 }
