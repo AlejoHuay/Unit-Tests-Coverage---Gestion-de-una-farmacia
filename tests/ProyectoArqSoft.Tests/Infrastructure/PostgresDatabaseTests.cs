@@ -13,6 +13,28 @@ namespace ProyectoArqSoft.Tests.Infrastructure;
 public class PostgresDatabaseTests
 {
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExecuteNonQuery_FallaEscritura_NoConfirmaYLiberaSoloRecursosPropios(bool conexionPrestada)
+    {
+        var mocks = new DatabaseMocks();
+        var command = DatabaseMocks.Command();
+        if (conexionPrestada) command.Object.Connection = mocks.Connection.Object;
+        var error = new InvalidOperationException("escritura rechazada");
+        command.Setup(c => c.ExecuteNonQuery()).Throws(error);
+
+        Assert.Same(error, Assert.Throws<InvalidOperationException>(() => mocks.Database.ExecuteNonQuery(command.Object)));
+
+        command.Verify(c => c.ExecuteNonQuery(), Times.Once);
+        mocks.Audit.Verify(c => c.ExecuteNonQuery(), Times.Once);
+        mocks.Transaction.Verify(t => t.Commit(), Times.Never);
+        mocks.Transaction.Protected().Verify("Dispose", Times.Once(), ItExpr.IsAny<bool>());
+        mocks.Connection.Protected().Verify("Dispose", conexionPrestada ? Times.Never() : Times.Once(), ItExpr.IsAny<bool>());
+        command.Protected().Verify("Dispose", Times.Never(), ItExpr.IsAny<bool>());
+        Assert.Equal(conexionPrestada ? ConnectionState.Open : ConnectionState.Closed, mocks.State);
+    }
+
+    [Theory]
     [InlineData("propia")]
     [InlineData("prestada-cerrada")]
     [InlineData("prestada-abierta")]
