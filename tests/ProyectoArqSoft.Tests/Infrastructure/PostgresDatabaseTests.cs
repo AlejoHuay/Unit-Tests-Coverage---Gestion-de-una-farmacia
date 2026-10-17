@@ -1,8 +1,6 @@
 using System.Data;
 using Microsoft.AspNetCore.Http;
 using Npgsql;
-using ProyectoArqSoft.Application.Helpers;
-using ProyectoArqSoft.Infrastructure.Helpers;
 using ProyectoArqSoft.Infrastructure.Persistence.Connection;
 using Xunit;
 
@@ -10,7 +8,6 @@ namespace ProyectoArqSoft.Tests.Infrastructure;
 
 public class PostgresDatabaseTests
 {
-
     [Fact]
     public void NormalizeParameters_ConNull_ConservaParametroYAsignaDBNull()
     {
@@ -22,7 +19,6 @@ public class PostgresDatabaseTests
         Assert.Same(DBNull.Value, parametro.Value);
     }
 
-
     [Theory]
     [InlineData((sbyte)-128, (short)-128)]
     [InlineData((byte)255, (short)255)]
@@ -33,7 +29,6 @@ public class PostgresDatabaseTests
         PostgresDatabase.NormalizeParameters(command);
         Assert.Equal(esperado, Assert.IsType<short>(parametro.Value));
     }
-
 
     [Fact]
     public void NormalizeParameters_ValoresCompatibles_ConservaTiposValoresYMetadatos()
@@ -54,7 +49,6 @@ public class PostgresDatabaseTests
         }
     }
 
-
     [Fact]
     public void CreateConnection_ConDataSource_DevuelveConexionesIndependientesCerradas()
     {
@@ -67,5 +61,4 @@ public class PostgresDatabaseTests
         Assert.Equal(ConnectionState.Closed, segunda.State);
         Assert.Equal("prueba", primera.Database);
     }
-
 }

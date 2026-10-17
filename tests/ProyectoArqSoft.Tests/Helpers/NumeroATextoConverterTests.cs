@@ -1,16 +1,10 @@
-using System.Data;
-using Microsoft.AspNetCore.Http;
-using Npgsql;
 using ProyectoArqSoft.Application.Helpers;
-using ProyectoArqSoft.Infrastructure.Helpers;
-using ProyectoArqSoft.Infrastructure.Persistence.Connection;
 using Xunit;
 
 namespace ProyectoArqSoft.Tests.Helpers;
 
 public class NumeroATextoConverterTests
 {
-
     [Theory]
     [InlineData(0, "cero")]
     [InlineData(16, "dieciséis")]
@@ -25,11 +19,9 @@ public class NumeroATextoConverterTests
         Assert.Equal(esperado, NumeroATextoConverter.ConvertirDecimalATexto(numero));
     }
 
-
     [Fact]
     public void ConvertirDecimalATexto_ConFraccion_TruncaSinRedondear()
     {
         Assert.Equal("diecinueve", NumeroATextoConverter.ConvertirDecimalATexto(19.99m));
     }
-
 }

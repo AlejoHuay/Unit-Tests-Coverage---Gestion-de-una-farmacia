@@ -20,13 +20,11 @@ public class StringHelperTests
         Assert.Empty(StringHelper.Limpiar(null));
     }
 
-
     [Fact]
     public void Limpiar_ConEspaciosInteriores_NoLosColapsa()
     {
         Assert.Equal("Ana   Maria", StringHelper.Limpiar(" Ana   Maria "));
     }
-
 
     [Theory]
     [InlineData(null, "")]
@@ -36,7 +34,6 @@ public class StringHelperTests
         Assert.Equal(esperado, StringHelper.LimpiarEspacios(texto));
     }
 
-
     [Theory]
     [InlineData(null, "")]
     [InlineData("  CI\t 123\r\nLP  ", "CI123LP")]
@@ -44,7 +41,6 @@ public class StringHelperTests
     {
         Assert.Equal(esperado, StringHelper.QuitarEspacios(texto));
     }
-
 
     [Theory]
     [InlineData(null, "")]
@@ -54,7 +50,6 @@ public class StringHelperTests
         Assert.Equal(esperado, StringHelper.LimpiarTexto(texto));
     }
 
-
     [Theory]
     [InlineData(null, "")]
     [InlineData("  ácido\t fólico  ", "ÁCIDO FÓLICO")]
@@ -62,7 +57,6 @@ public class StringHelperTests
     {
         Assert.Equal(esperado, StringHelper.LimpiarTextoMayus(texto));
     }
-
 
     [Theory]
     [InlineData(null, "")]
@@ -72,7 +66,6 @@ public class StringHelperTests
         Assert.Equal(esperado, StringHelper.LimpiarTextoMinus(texto));
     }
 
-
     [Theory]
     [InlineData(null, "")]
     [InlineData("CI 12-3A\t.4", "1234")]
@@ -81,7 +74,6 @@ public class StringHelperTests
         Assert.Equal(esperado, StringHelper.SoloNumeros(texto));
     }
 
-
     [Theory]
     [InlineData(null, "")]
     [InlineData(" 12\t3 lp\r\n ", "123LP")]
@@ -89,7 +81,6 @@ public class StringHelperTests
     {
         Assert.Equal(esperado, StringHelper.LimpiarCI(texto));
     }
-
 
     [Theory]
     [InlineData(null, true)]
@@ -109,7 +100,6 @@ public class StringHelperTests
         Assert.Equal(esperado, StringHelper.NombrePareceFragmentado(nombre));
     }
 
-
     [Theory]
     [InlineData(null, true)]
     [InlineData("A Perez", true)]
@@ -126,5 +116,4 @@ public class StringHelperTests
     {
         Assert.Equal(esperado, StringHelper.ApellidoPareceFragmentado(apellido));
     }
-
 }

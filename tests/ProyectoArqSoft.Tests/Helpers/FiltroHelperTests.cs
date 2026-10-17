@@ -1,22 +1,15 @@
-using System.Data;
-using Microsoft.AspNetCore.Http;
-using Npgsql;
-using ProyectoArqSoft.Application.Helpers;
 using ProyectoArqSoft.Infrastructure.Helpers;
-using ProyectoArqSoft.Infrastructure.Persistence.Connection;
 using Xunit;
 
 namespace ProyectoArqSoft.Tests.Helpers;
 
 public class FiltroHelperTests
 {
-
     [Fact]
     public void LimpiarFiltro_ConEspaciosMixtos_ConservaPalabrasNormalizadas()
     {
         Assert.Equal("Ácido 20", FiltroHelper.LimpiarFiltro(" \tÁcido \r\n 20  "));
     }
-
 
     [Theory]
     [InlineData(null)]
@@ -27,7 +20,6 @@ public class FiltroHelperTests
         Assert.True(resultado.IsSuccess);
         Assert.Empty(resultado.Error);
     }
-
 
     [Theory]
     [InlineData(2, "El criterio debe tener al menos 3 caracteres.")]
@@ -41,7 +33,6 @@ public class FiltroHelperTests
         Assert.Equal(error, resultado.Error);
     }
 
-
     [Theory]
     [InlineData("a", "El criterio debe tener al menos 2 caracteres.")]
     [InlineData("abcde", "El criterio no puede tener más de 4 caracteres.")]
@@ -53,7 +44,6 @@ public class FiltroHelperTests
         Assert.Equal(error, resultado.Error);
     }
 
-
     [Theory]
     [InlineData("Ácido 20 - forte", true)]
     [InlineData("Ácido+20", false)]
@@ -64,7 +54,6 @@ public class FiltroHelperTests
         Assert.Equal(valido ? "" : "Criterio inválido.", resultado.Error);
     }
 
-
     [Theory]
     [InlineData("   ", new string[0])]
     [InlineData("  acido   folico  ", new[] { "acido", "folico" })]
@@ -72,5 +61,4 @@ public class FiltroHelperTests
     {
         Assert.Equal(esperado, FiltroHelper.ObtenerPartes(filtro));
     }
-
 }

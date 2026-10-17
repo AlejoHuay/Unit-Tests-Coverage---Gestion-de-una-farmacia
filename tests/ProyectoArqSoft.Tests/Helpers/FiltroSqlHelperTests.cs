@@ -1,16 +1,11 @@
-using System.Data;
-using Microsoft.AspNetCore.Http;
 using Npgsql;
-using ProyectoArqSoft.Application.Helpers;
 using ProyectoArqSoft.Infrastructure.Helpers;
-using ProyectoArqSoft.Infrastructure.Persistence.Connection;
 using Xunit;
 
 namespace ProyectoArqSoft.Tests.Helpers;
 
 public class FiltroSqlHelperTests
 {
-
     [Theory]
     [InlineData(" ", new[] { "nombre" })]
     [InlineData("acido", new string[0])]
@@ -18,7 +13,6 @@ public class FiltroSqlHelperTests
     {
         Assert.Empty(FiltroSqlHelper.ConstruirCondicionLike(filtro, columnas));
     }
-
 
     [Fact]
     public void ConstruirCondicionLike_DosTerminosYColumnas_ConstruyeGruposParametrizados()
@@ -29,7 +23,6 @@ public class FiltroSqlHelperTests
         Assert.Equal(esperado, resultado);
     }
 
-
     [Fact]
     public void AgregarParametrosLike_SinPalabras_NoModificaParametrosExistentes()
     {
@@ -39,7 +32,6 @@ public class FiltroSqlHelperTests
         Assert.Same(previo, Assert.Single(command.Parameters.Cast<NpgsqlParameter>()));
         Assert.Equal(7, previo.Value);
     }
-
 
     [Fact]
     public void AgregarParametrosLike_ConComillaYTabulador_ConservaDatosEnParametros()
@@ -55,5 +47,4 @@ public class FiltroSqlHelperTests
             p => { Assert.Equal("@valor1", p.ParameterName); Assert.Equal("%acido%", p.Value); });
         Assert.Null(command.Connection);
     }
-
 }
