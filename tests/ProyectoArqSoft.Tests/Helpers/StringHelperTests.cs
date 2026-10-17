@@ -13,4 +13,11 @@ public class StringHelperTests
 
         Assert.Equal("Paracetamol", resultado);
     }
+
+    [Fact]
+    public void Limpiar_ConNull_DevuelveVacio()
+    {
+        Assert.Empty(StringHelper.Limpiar(null));
+    }
+
 }
