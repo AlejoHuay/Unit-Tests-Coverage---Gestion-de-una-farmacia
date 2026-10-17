@@ -104,4 +104,35 @@ public class PostgresDatabaseIntegrationTests
         accessor.VerifyNoOtherCalls();
     }
 
+
+    [PostgresTheory]
+    [InlineData("propia")]
+    [InlineData("prestada-cerrada")]
+    [InlineData("prestada-abierta")]
+    public void ExecuteNonQuery_PropiedadYEstadoDeConexion_ConfirmaYNormaliza(string modo)
+    {
+        using var db = new PostgresHelperTestDatabase();
+        using var prestada = modo == "propia" ? null : db.Source.CreateConnection();
+        if (modo == "prestada-abierta") prestada!.Open();
+        using var command = new NpgsqlCommand("INSERT INTO prueba(id, valor) VALUES (@id, @valor)", prestada);
+        command.Parameters.AddWithValue("id", (sbyte)7);
+        command.Parameters.Add(new NpgsqlParameter { ParameterName = "valor", Value = null! });
+        var resultado = db.Database().ExecuteNonQuery(command);
+        Assert.Equal(1, resultado);
+        Assert.Equal((short)7, Assert.IsType<short>(command.Parameters[0].Value));
+        Assert.Same(DBNull.Value, command.Parameters[1].Value);
+        Assert.Equal(1L, db.Scalar("SELECT count(*) FROM prueba WHERE id=7 AND valor IS NULL"));
+        if (prestada != null)
+        {
+            Assert.Same(prestada, command.Connection);
+            Assert.Equal(ConnectionState.Open, prestada.State);
+            using var siguiente = prestada.BeginTransaction();
+            siguiente.Rollback();
+        }
+        else
+        {
+            Assert.Equal(ConnectionState.Closed, command.Connection!.State);
+        }
+    }
+
 }
