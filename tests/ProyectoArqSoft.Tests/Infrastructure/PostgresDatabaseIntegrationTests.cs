@@ -49,4 +49,24 @@ public class PostgresDatabaseIntegrationTests
         accessor.VerifyNoOtherCalls();
     }
 
+
+    [PostgresFact]
+    public void BeginTransaction_SinContexto_GeneraSolicitudYMotivoDeRespaldo()
+    {
+        using var db = new PostgresHelperTestDatabase();
+        var accessor = new Mock<IHttpContextAccessor>(MockBehavior.Strict);
+        accessor.SetupGet(a => a.HttpContext).Returns((HttpContext?)null);
+        using var connection = db.Source.OpenConnection();
+        using var transaction = db.Database(accessor.Object).BeginTransaction(connection);
+        using var command = new NpgsqlCommand("SELECT current_setting('app.usuario_id'), current_setting('app.solicitud_id'), current_setting('app.motivo')", connection, transaction);
+        using var reader = command.ExecuteReader();
+        Assert.True(reader.Read());
+        Assert.Empty(reader.GetString(0));
+        Assert.True(Guid.TryParseExact(reader.GetString(1), "N", out var requestId));
+        Assert.NotEqual(Guid.Empty, requestId);
+        Assert.Equal("Operacion de repositorio", reader.GetString(2));
+        accessor.VerifyGet(a => a.HttpContext, Times.Once);
+        accessor.VerifyNoOtherCalls();
+    }
+
 }
