@@ -40,4 +40,20 @@ public class FiltroSqlHelperTests
         Assert.Equal(7, previo.Value);
     }
 
+
+    [Fact]
+    public void AgregarParametrosLike_ConComillaYTabulador_ConservaDatosEnParametros()
+    {
+        const string filtro = " O'Reilly  ac\tido ";
+        using var command = new NpgsqlCommand("SELECT 1 WHERE true" + FiltroSqlHelper.ConstruirCondicionLike(filtro, "nombre"));
+        var sql = command.CommandText;
+        FiltroSqlHelper.AgregarParametrosLike(command, filtro);
+        Assert.Equal(sql, command.CommandText);
+        Assert.DoesNotContain("O'Reilly", sql);
+        Assert.Collection(command.Parameters.Cast<NpgsqlParameter>(),
+            p => { Assert.Equal("@valor0", p.ParameterName); Assert.Equal("%O'Reilly%", p.Value); },
+            p => { Assert.Equal("@valor1", p.ParameterName); Assert.Equal("%acido%", p.Value); });
+        Assert.Null(command.Connection);
+    }
+
 }
