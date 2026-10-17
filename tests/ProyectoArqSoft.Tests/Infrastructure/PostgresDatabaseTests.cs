@@ -34,4 +34,24 @@ public class PostgresDatabaseTests
         Assert.Equal(esperado, Assert.IsType<short>(parametro.Value));
     }
 
+
+    [Fact]
+    public void NormalizeParameters_ValoresCompatibles_ConservaTiposValoresYMetadatos()
+    {
+        using var command = new NpgsqlCommand("SELECT @texto");
+        object[] valores = { DBNull.Value, 17, 12.5m, "Ácido" };
+        foreach (var valor in valores)
+            command.Parameters.AddWithValue("p" + command.Parameters.Count, valor);
+        var parametros = command.Parameters.Cast<NpgsqlParameter>().ToArray();
+        PostgresDatabase.NormalizeParameters(command);
+        Assert.Equal("SELECT @texto", command.CommandText);
+        Assert.Equal(valores.Length, command.Parameters.Count);
+        for (var i = 0; i < valores.Length; i++)
+        {
+            Assert.Same(parametros[i], command.Parameters[i]);
+            Assert.Same(valores[i], command.Parameters[i].Value);
+            Assert.Equal("p" + i, command.Parameters[i].ParameterName);
+        }
+    }
+
 }
