@@ -77,4 +77,24 @@ public class RepositoryDbHelperTests
         Assert.Equal(ConnectionState.Closed, command.Connection!.State);
     }
 
+
+    [PostgresFact]
+    public void ExecuteReaderSingle_MapeadorFalla_PropagaMismaExcepcionYLiberaRecursos()
+    {
+        using var db = new PostgresHelperTestDatabase();
+        using var command = new NpgsqlCommand("SELECT 1");
+        var fallo = new InvalidOperationException("mapeo fallido");
+        NpgsqlDataReader? capturado = null;
+        var error = Assert.Throws<InvalidOperationException>(() => RepositoryDbHelper.ExecuteReaderSingle<string>(db.Database(), command, reader =>
+        {
+            capturado = reader;
+            throw fallo;
+        }));
+        Assert.Same(fallo, error);
+        Assert.NotNull(capturado);
+        Assert.True(capturado.IsClosed);
+        Assert.Throws<ObjectDisposedException>(() => command.ExecuteScalar());
+        Assert.Equal(ConnectionState.Closed, command.Connection!.State);
+    }
+
 }
