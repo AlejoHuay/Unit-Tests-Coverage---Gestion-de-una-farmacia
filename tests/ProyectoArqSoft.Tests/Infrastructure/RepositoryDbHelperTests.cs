@@ -11,6 +11,46 @@ namespace ProyectoArqSoft.Tests.Infrastructure;
 public class RepositoryDbHelperTests
 {
     [Theory]
+    [InlineData("escritura", false)]
+    [InlineData("escalar", false)]
+    [InlineData("lector", false)]
+    [InlineData("escritura", true)]
+    [InlineData("escalar", true)]
+    [InlineData("lector", true)]
+    public void Operaciones_FallaAperturaOEjecucion_PropaganErrorYDisponenRecursos(string operacion, bool fallaApertura)
+    {
+        var mocks = new DatabaseMocks();
+        var command = DatabaseMocks.Command();
+        var error = new InvalidOperationException("operacion rechazada");
+        if (fallaApertura) mocks.Connection.Setup(c => c.Open()).Throws(error);
+        else if (operacion == "escritura") command.Setup(c => c.ExecuteNonQuery()).Throws(error);
+        else if (operacion == "escalar") command.Setup(c => c.ExecuteScalar()).Throws(error);
+        else command.Protected().Setup<DbDataReader>("ExecuteDbDataReader", ItExpr.IsAny<CommandBehavior>()).Throws(error);
+
+        Assert.Same(error, Assert.Throws<InvalidOperationException>(() =>
+        {
+            switch (operacion)
+            {
+                case "escritura": RepositoryDbHelper.ExecuteNonQuery(mocks.Database, command.Object); break;
+                case "escalar": RepositoryDbHelper.ExecuteScalar(mocks.Database, command.Object); break;
+                default:
+                    RepositoryDbHelper.ExecuteReaderSingle<string>(mocks.Database, command.Object,
+                        _ => throw new Xunit.Sdk.XunitException("No debe mapear una consulta fallida."));
+                    break;
+            }
+        }));
+
+        mocks.Factory.Verify(f => f(), Times.Once);
+        mocks.Connection.Verify(c => c.Open(), Times.Once);
+        command.Verify(c => c.ExecuteNonQuery(), !fallaApertura && operacion == "escritura" ? Times.Once() : Times.Never());
+        command.Verify(c => c.ExecuteScalar(), !fallaApertura && operacion == "escalar" ? Times.Once() : Times.Never());
+        command.Protected().Verify("ExecuteDbDataReader", !fallaApertura && operacion == "lector" ? Times.Once() : Times.Never(), CommandBehavior.Default);
+        command.Protected().Verify("Dispose", Times.Once(), ItExpr.IsAny<bool>());
+        mocks.Connection.Protected().Verify("Dispose", Times.Once(), ItExpr.IsAny<bool>());
+        mocks.Transaction.Verify(t => t.Commit(), Times.Never);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void ExecuteReaderSingle_FallaLecturaOMapeador_PropagaErrorYLiberaLosTresRecursos(bool fallaMapeador)
