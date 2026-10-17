@@ -23,5 +23,6 @@
   <ItemGroup>
     <ProjectReference Include="../../ProyectoArqSoft.csproj" />
     <None Include="../../wwwroot/images/vitalcare.png" Link="TestAssets/vitalcare.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../database/postgresql/01_esquema_y_auditoria.sql" Link="TestAssets/postgres-schema.sql" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
