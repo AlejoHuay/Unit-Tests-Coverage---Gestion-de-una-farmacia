@@ -15,6 +15,26 @@ public class PostgresDatabaseTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public void BeginTransaction_FallaAuditoria_LiberaTransaccionYPropagaMismoError(bool fallaComando)
+    {
+        var mocks = new DatabaseMocks();
+        var error = new InvalidOperationException("fallo de auditoria");
+        if (fallaComando) mocks.Audit.Setup(c => c.ExecuteNonQuery()).Throws(error);
+        else mocks.Http.SetupGet(h => h.HttpContext).Throws(error);
+
+        Assert.Same(error, Assert.Throws<InvalidOperationException>(() => mocks.Database.BeginTransaction(mocks.Connection.Object)));
+
+        mocks.Transaction.Protected().Verify("Dispose", Times.Once(), ItExpr.IsAny<bool>());
+        mocks.Transaction.Verify(t => t.Commit(), Times.Never);
+        mocks.Connection.Protected().Verify("Dispose", Times.Never(), ItExpr.IsAny<bool>());
+        mocks.Audit.Protected().Verify("Dispose", fallaComando ? Times.Once() : Times.Never(), ItExpr.IsAny<bool>());
+        mocks.Audit.Verify(c => c.ExecuteNonQuery(), fallaComando ? Times.Once() : Times.Never());
+        mocks.Http.VerifyGet(h => h.HttpContext, Times.Once);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void BeginTransaction_SinUsuario_ConservaContextoOUsaRespaldo(bool hayContexto)
     {
         var context = hayContexto ? new DefaultHttpContext
