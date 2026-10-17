@@ -138,4 +138,17 @@ public class ClasificacionServiceTests
         _repository.Verify(r => r.Insert(It.IsAny<Clasificacion>()), Times.Once);
         VerificarSinOtrasLlamadas();
     }
+
+    [Fact]
+    public void Actualizar_ConValidacionRechazada_DevuelveElRechazoSinConsultarNiActualizar()
+    {
+        var rechazo = Result.Fail("Clasificacion invalida.");
+        _validador.Setup(v => v.Validar(It.IsAny<Clasificacion>())).Returns(rechazo);
+
+        var resultado = CrearServicio().Actualizar(17, "Analgesicos", "Sintetico", "Tratamiento del dolor", 9);
+
+        Assert.Same(rechazo, resultado);
+        _validador.Verify(v => v.Validar(It.IsAny<Clasificacion>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
 }
