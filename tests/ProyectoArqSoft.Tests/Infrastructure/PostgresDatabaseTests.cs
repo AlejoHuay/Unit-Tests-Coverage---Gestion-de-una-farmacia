@@ -13,6 +13,37 @@ namespace ProyectoArqSoft.Tests.Infrastructure;
 public class PostgresDatabaseTests
 {
     [Theory]
+    [InlineData("propia")]
+    [InlineData("prestada-cerrada")]
+    [InlineData("prestada-abierta")]
+    public void ExecuteNonQuery_PropiedadYEstadoDeConexion_NormalizaAuditaYConfirma(string modo)
+    {
+        var mocks = new DatabaseMocks();
+        var command = DatabaseMocks.Command();
+        if (modo != "propia") command.Object.Connection = mocks.Connection.Object;
+        if (modo == "prestada-abierta") mocks.State = ConnectionState.Open;
+        command.Object.Parameters.Add(new NpgsqlParameter("id", (byte)255));
+        command.Object.Parameters.Add(new NpgsqlParameter { ParameterName = "valor", Value = null! });
+        command.Setup(c => c.ExecuteNonQuery()).Callback(() => mocks.Events.Add("escribir")).Returns(2);
+
+        Assert.Equal(2, mocks.Database.ExecuteNonQuery(command.Object));
+
+        Assert.Equal((short)255, Assert.IsType<short>(command.Object.Parameters[0].Value));
+        Assert.Same(DBNull.Value, command.Object.Parameters[1].Value);
+        Assert.Same(mocks.Connection.Object, command.Object.Connection);
+        Assert.Same(mocks.Transaction.Object, command.Object.Transaction);
+        var esperado = new List<string>();
+        if (modo != "prestada-abierta") esperado.Add("abrir");
+        esperado.AddRange(new[] { "iniciar", "auditar", "escribir", "confirmar", "liberar-transaccion" });
+        if (modo == "propia") esperado.Add("cerrar");
+        Assert.Equal(esperado, mocks.Events);
+        mocks.Factory.Verify(f => f(), modo == "propia" ? Times.Once() : Times.Never());
+        command.Verify(c => c.ExecuteNonQuery(), Times.Once);
+        command.Protected().Verify("Dispose", Times.Never(), ItExpr.IsAny<bool>());
+        Assert.Equal(modo == "propia" ? ConnectionState.Closed : ConnectionState.Open, mocks.State);
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void BeginTransaction_FallaAuditoria_LiberaTransaccionYPropagaMismoError(bool fallaComando)
