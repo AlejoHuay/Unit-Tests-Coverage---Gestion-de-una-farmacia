@@ -20,4 +20,11 @@ public class StringHelperTests
         Assert.Empty(StringHelper.Limpiar(null));
     }
 
+
+    [Fact]
+    public void Limpiar_ConEspaciosInteriores_NoLosColapsa()
+    {
+        Assert.Equal("Ana   Maria", StringHelper.Limpiar(" Ana   Maria "));
+    }
+
 }
