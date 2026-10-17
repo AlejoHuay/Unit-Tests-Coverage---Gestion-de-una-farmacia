@@ -22,4 +22,16 @@ public class PostgresDatabaseTests
         Assert.Same(DBNull.Value, parametro.Value);
     }
 
+
+    [Theory]
+    [InlineData((sbyte)-128, (short)-128)]
+    [InlineData((byte)255, (short)255)]
+    public void NormalizeParameters_EnterosDeOchoBits_ConvierteAShort(object valor, short esperado)
+    {
+        using var command = new NpgsqlCommand();
+        var parametro = command.Parameters.AddWithValue("valor", valor);
+        PostgresDatabase.NormalizeParameters(command);
+        Assert.Equal(esperado, Assert.IsType<short>(parametro.Value));
+    }
+
 }
