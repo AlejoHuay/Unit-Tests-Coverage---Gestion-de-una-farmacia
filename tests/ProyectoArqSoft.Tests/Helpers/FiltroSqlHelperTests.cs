@@ -19,4 +19,14 @@ public class FiltroSqlHelperTests
         Assert.Empty(FiltroSqlHelper.ConstruirCondicionLike(filtro, columnas));
     }
 
+
+    [Fact]
+    public void ConstruirCondicionLike_DosTerminosYColumnas_ConstruyeGruposParametrizados()
+    {
+        var resultado = FiltroSqlHelper.ConstruirCondicionLike("  acido   folico  ", "m.nombre", "m.descripcion");
+        const string esperado = " AND (farmacia.normalizar_texto(REPLACE(m.nombre::text, ' ', '')) LIKE farmacia.normalizar_texto(@valor0) OR farmacia.normalizar_texto(REPLACE(m.descripcion::text, ' ', '')) LIKE farmacia.normalizar_texto(@valor0))"
+            + " AND (farmacia.normalizar_texto(REPLACE(m.nombre::text, ' ', '')) LIKE farmacia.normalizar_texto(@valor1) OR farmacia.normalizar_texto(REPLACE(m.descripcion::text, ' ', '')) LIKE farmacia.normalizar_texto(@valor1))";
+        Assert.Equal(esperado, resultado);
+    }
+
 }
