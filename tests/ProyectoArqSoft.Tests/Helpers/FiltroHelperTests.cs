@@ -64,4 +64,13 @@ public class FiltroHelperTests
         Assert.Equal(valido ? "" : "Criterio inválido.", resultado.Error);
     }
 
+
+    [Theory]
+    [InlineData("   ", new string[0])]
+    [InlineData("  acido   folico  ", new[] { "acido", "folico" })]
+    public void ObtenerPartes_ConYSinPalabras_DevuelvePartesOrdenadas(string filtro, string[] esperado)
+    {
+        Assert.Equal(esperado, FiltroHelper.ObtenerPartes(filtro));
+    }
+
 }
