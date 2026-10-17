@@ -89,4 +89,21 @@ public class ClasificacionServiceTests
         _repository.Verify(r => r.ExisteNombreActivo("Analgesicos"), Times.Once);
         VerificarSinOtrasLlamadas();
     }
+
+    [Fact]
+    public void Crear_SinFilasInsertadas_DevuelveError()
+    {
+        _validador.Setup(v => v.Validar(It.IsAny<Clasificacion>())).Returns(Result.Ok());
+        _repository.Setup(r => r.ExisteNombreActivo("Analgesicos")).Returns(false);
+        _repository.Setup(r => r.Insert(It.IsAny<Clasificacion>())).Returns(0);
+
+        var resultado = CrearServicio().Crear("Analgesicos", "Sintetico", "Tratamiento del dolor", 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("No se pudo registrar la clasificación.", resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Clasificacion>()), Times.Once);
+        _repository.Verify(r => r.ExisteNombreActivo("Analgesicos"), Times.Once);
+        _repository.Verify(r => r.Insert(It.IsAny<Clasificacion>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
 }
