@@ -106,4 +106,36 @@ public class ClasificacionServiceTests
         _repository.Verify(r => r.Insert(It.IsAny<Clasificacion>()), Times.Once);
         VerificarSinOtrasLlamadas();
     }
+
+    [Fact]
+    public void Crear_ConDatosValidos_LimpiaAntesDeValidarYRegistraElMismoObjeto()
+    {
+        Clasificacion? validada = null;
+        var secuencia = new MockSequence();
+        _validador.InSequence(secuencia).Setup(v => v.Validar(It.IsAny<Clasificacion>()))
+            .Callback<Clasificacion>(c =>
+            {
+                Assert.Equal(0, c.Id);
+                Assert.Equal(9, c.IdUsuario);
+                Assert.Equal("Analgesicos adultos", c.Nombre);
+                Assert.Equal("Origen sintetico", c.Origen);
+                Assert.Equal("Tratamiento del dolor", c.Descripcion);
+                Assert.Equal((short)1, c.Estado);
+                validada = c;
+            }).Returns(Result.Ok());
+        _repository.InSequence(secuencia).Setup(r => r.ExisteNombreActivo("Analgesicos adultos"))
+            .Returns(false);
+        _repository.InSequence(secuencia).Setup(r => r.Insert(It.IsAny<Clasificacion>()))
+            .Callback<Clasificacion>(c => Assert.Same(validada, c)).Returns(1);
+
+        var resultado = CrearServicio().Crear(
+            "  Analgesicos   adultos  ", "  Origen   sintetico  ", "  Tratamiento   del dolor  ", 9);
+
+        Assert.True(resultado.IsSuccess);
+        Assert.Equal(string.Empty, resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Clasificacion>()), Times.Once);
+        _repository.Verify(r => r.ExisteNombreActivo("Analgesicos adultos"), Times.Once);
+        _repository.Verify(r => r.Insert(It.IsAny<Clasificacion>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
 }
