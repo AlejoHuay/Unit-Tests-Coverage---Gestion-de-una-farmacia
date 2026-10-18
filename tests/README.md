@@ -1,7 +1,10 @@
 # Pruebas unitarias y cobertura
 
+La [guia de ClasificacionService](ClasificacionService.md) documenta sus 14 casos,
+los caminos independientes, las tres formulas de complejidad y la cobertura verificada.
+
 La [guia de ClienteService](ClienteService.md) documenta los caminos de clientes,
-la cobertura verificada y la ejecucion con copias locales duplicadas.
+la cobertura verificada y la resolucion de las copias locales duplicadas.
 
 La [guia de MedicamentoService](MedicamentoService.md) relaciona sus pruebas
 con los caminos independientes y documenta la cobertura verificada del modulo.
@@ -81,6 +84,15 @@ los necesitas como evidencia.
    resultados observables con `Assert`; no hace falta registrar cada archivo.
 3. Ejecuta nuevamente el mismo script y compara cobertura de lineas y ramas,
    tanto global como por clase, en el HTML y su historial.
+
+Las pruebas de `Validators/` son unitarias y no requieren PostgreSQL. Las de
+`Repositories/` usan `PostgresTestDatabase`, que crea una base exclusiva por
+prueba; si no se configura el entorno PostgreSQL, xUnit las marca como omitidas.
+Para ejecutarlas con cobertura se necesita PostgreSQL 17 o posterior instalado:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\Invoke-PostgresTests.ps1 -Coverage
+```
 
 Para ejecutar solo las pruebas:
 

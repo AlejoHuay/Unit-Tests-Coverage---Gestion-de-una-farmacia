@@ -1,0 +1,264 @@
+using System.Data;
+using Moq;
+using ProyectoArqSoft.Application.Interfaces;
+using ProyectoArqSoft.Application.Ports.Output;
+using ProyectoArqSoft.Application.Services;
+using ProyectoArqSoft.Domain.Models;
+using ProyectoArqSoft.Domain.Validators;
+using Xunit;
+
+namespace ProyectoArqSoft.Tests.Services;
+
+public class ClasificacionServiceTests
+{
+    private readonly Mock<IClasificacionRepository> _repository = new(MockBehavior.Strict);
+    private readonly Mock<IResult<Clasificacion>> _validador = new(MockBehavior.Strict);
+
+    private ClasificacionService CrearServicio() => new(_repository.Object, _validador.Object);
+
+    private void VerificarSinOtrasLlamadas()
+    {
+        _repository.VerifyNoOtherCalls();
+        _validador.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void ObtenerTodos_SinFiltro_DevuelveLaTablaDelRepositorio()
+    {
+        var tabla = new DataTable();
+        _repository.Setup(r => r.GetAll()).Returns(tabla);
+
+        var resultado = CrearServicio().ObtenerTodos();
+
+        Assert.Same(tabla, resultado);
+        _repository.Verify(r => r.GetAll(), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
+    public void ObtenerTodos_ConFiltro_EnviaElFiltroSinModificar()
+    {
+        const string filtro = "  Analgesicos   adultos  ";
+        var tabla = new DataTable();
+        _repository.Setup(r => r.GetAll(filtro)).Returns(tabla);
+
+        var resultado = CrearServicio().ObtenerTodos(filtro);
+
+        Assert.Same(tabla, resultado);
+        _repository.Verify(r => r.GetAll(filtro), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
+    public void ObtenerPorId_EnviaElIdYDevuelveLaClasificacionDelRepositorio()
+    {
+        var clasificacion = new Clasificacion { Id = 17, Nombre = "Analgesicos" };
+        _repository.Setup(r => r.GetById(17)).Returns(clasificacion);
+
+        var resultado = CrearServicio().ObtenerPorId(17);
+
+        Assert.Same(clasificacion, resultado);
+        _repository.Verify(r => r.GetById(17), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
+    public void Crear_ConValidacionRechazada_DevuelveElRechazoSinConsultarNiInsertar()
+    {
+        var rechazo = Result.Fail("Clasificacion invalida.");
+        _validador.Setup(v => v.Validar(It.IsAny<Clasificacion>())).Returns(rechazo);
+
+        var resultado = CrearServicio().Crear("Analgesicos", "Sintetico", "Tratamiento del dolor", 9);
+
+        Assert.Same(rechazo, resultado);
+        _validador.Verify(v => v.Validar(It.IsAny<Clasificacion>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
+    public void Crear_ConNombreActivoDuplicado_DevuelveErrorSinInsertar()
+    {
+        _validador.Setup(v => v.Validar(It.IsAny<Clasificacion>())).Returns(Result.Ok());
+        _repository.Setup(r => r.ExisteNombreActivo("Analgesicos")).Returns(true);
+
+        var resultado = CrearServicio().Crear("  Analgesicos  ", "Sintetico", "Tratamiento del dolor", 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("Ya existe una clasificación activa con ese nombre.", resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Clasificacion>()), Times.Once);
+        _repository.Verify(r => r.ExisteNombreActivo("Analgesicos"), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
+    public void Crear_SinFilasInsertadas_DevuelveError()
+    {
+        _validador.Setup(v => v.Validar(It.IsAny<Clasificacion>())).Returns(Result.Ok());
+        _repository.Setup(r => r.ExisteNombreActivo("Analgesicos")).Returns(false);
+        _repository.Setup(r => r.Insert(It.IsAny<Clasificacion>())).Returns(0);
+
+        var resultado = CrearServicio().Crear("Analgesicos", "Sintetico", "Tratamiento del dolor", 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("No se pudo registrar la clasificación.", resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Clasificacion>()), Times.Once);
+        _repository.Verify(r => r.ExisteNombreActivo("Analgesicos"), Times.Once);
+        _repository.Verify(r => r.Insert(It.IsAny<Clasificacion>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
+    public void Crear_ConDatosValidos_LimpiaAntesDeValidarYRegistraElMismoObjeto()
+    {
+        Clasificacion? validada = null;
+        var secuencia = new MockSequence();
+        _validador.InSequence(secuencia).Setup(v => v.Validar(It.IsAny<Clasificacion>()))
+            .Callback<Clasificacion>(c =>
+            {
+                Assert.Equal(0, c.Id);
+                Assert.Equal(9, c.IdUsuario);
+                Assert.Equal("Analgesicos adultos", c.Nombre);
+                Assert.Equal("Origen sintetico", c.Origen);
+                Assert.Equal("Tratamiento del dolor", c.Descripcion);
+                Assert.Equal((short)1, c.Estado);
+                validada = c;
+            }).Returns(Result.Ok());
+        _repository.InSequence(secuencia).Setup(r => r.ExisteNombreActivo("Analgesicos adultos"))
+            .Returns(false);
+        _repository.InSequence(secuencia).Setup(r => r.Insert(It.IsAny<Clasificacion>()))
+            .Callback<Clasificacion>(c => Assert.Same(validada, c)).Returns(1);
+
+        var resultado = CrearServicio().Crear(
+            "  Analgesicos   adultos  ", "  Origen   sintetico  ", "  Tratamiento   del dolor  ", 9);
+
+        Assert.True(resultado.IsSuccess);
+        Assert.Equal(string.Empty, resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Clasificacion>()), Times.Once);
+        _repository.Verify(r => r.ExisteNombreActivo("Analgesicos adultos"), Times.Once);
+        _repository.Verify(r => r.Insert(It.IsAny<Clasificacion>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
+    public void Actualizar_ConValidacionRechazada_DevuelveElRechazoSinConsultarNiActualizar()
+    {
+        var rechazo = Result.Fail("Clasificacion invalida.");
+        _validador.Setup(v => v.Validar(It.IsAny<Clasificacion>())).Returns(rechazo);
+
+        var resultado = CrearServicio().Actualizar(17, "Analgesicos", "Sintetico", "Tratamiento del dolor", 9);
+
+        Assert.Same(rechazo, resultado);
+        _validador.Verify(v => v.Validar(It.IsAny<Clasificacion>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
+    public void Actualizar_ConNombreDeOtraClasificacion_DevuelveErrorSinActualizar()
+    {
+        _validador.Setup(v => v.Validar(It.IsAny<Clasificacion>())).Returns(Result.Ok());
+        _repository.Setup(r => r.ExisteNombreActivoExcluyendoId(17, "Analgesicos")).Returns(true);
+
+        var resultado = CrearServicio().Actualizar(
+            17, "  Analgesicos  ", "Sintetico", "Tratamiento del dolor", 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("Ya existe otra clasificación activa con ese nombre.", resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Clasificacion>()), Times.Once);
+        _repository.Verify(r => r.ExisteNombreActivoExcluyendoId(17, "Analgesicos"), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
+    public void Actualizar_SinFilasActualizadas_DevuelveError()
+    {
+        _validador.Setup(v => v.Validar(It.IsAny<Clasificacion>())).Returns(Result.Ok());
+        _repository.Setup(r => r.ExisteNombreActivoExcluyendoId(17, "Analgesicos")).Returns(false);
+        _repository.Setup(r => r.Update(It.IsAny<Clasificacion>())).Returns(0);
+
+        var resultado = CrearServicio().Actualizar(17, "Analgesicos", "Sintetico", "Tratamiento del dolor", 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("No se pudo actualizar la clasificación.", resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Clasificacion>()), Times.Once);
+        _repository.Verify(r => r.ExisteNombreActivoExcluyendoId(17, "Analgesicos"), Times.Once);
+        _repository.Verify(r => r.Update(It.IsAny<Clasificacion>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
+    public void Actualizar_ConDatosValidos_ConservaIdsYLimpiaAntesDeValidar()
+    {
+        Clasificacion? validada = null;
+        var secuencia = new MockSequence();
+        _validador.InSequence(secuencia).Setup(v => v.Validar(It.IsAny<Clasificacion>()))
+            .Callback<Clasificacion>(c =>
+            {
+                Assert.Equal(17, c.Id);
+                Assert.Equal(9, c.IdUsuario);
+                Assert.Equal("Antiinflamatorios locales", c.Nombre);
+                Assert.Equal("Origen sintetico", c.Origen);
+                Assert.Equal("Descripcion actualizada", c.Descripcion);
+                validada = c;
+            }).Returns(Result.Ok());
+        _repository.InSequence(secuencia)
+            .Setup(r => r.ExisteNombreActivoExcluyendoId(17, "Antiinflamatorios locales")).Returns(false);
+        _repository.InSequence(secuencia).Setup(r => r.Update(It.IsAny<Clasificacion>()))
+            .Callback<Clasificacion>(c => Assert.Same(validada, c)).Returns(1);
+
+        var resultado = CrearServicio().Actualizar(
+            17, "  Antiinflamatorios   locales  ", "  Origen   sintetico  ", "  Descripcion   actualizada  ", 9);
+
+        Assert.True(resultado.IsSuccess);
+        Assert.Equal(string.Empty, resultado.Error);
+        _validador.Verify(v => v.Validar(It.IsAny<Clasificacion>()), Times.Once);
+        _repository.Verify(r => r.ExisteNombreActivoExcluyendoId(17, "Antiinflamatorios locales"), Times.Once);
+        _repository.Verify(r => r.Update(It.IsAny<Clasificacion>()), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
+    public void EliminarLogicamente_ConMedicamentosActivos_DevuelveErrorSinEliminar()
+    {
+        _repository.Setup(r => r.TieneMedicamentosActivosAsociados(17)).Returns(true);
+
+        var resultado = CrearServicio().EliminarLogicamente(17, 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("No se puede eliminar la clasificación porque tiene medicamentos activos asociados.", resultado.Error);
+        _repository.Verify(r => r.TieneMedicamentosActivosAsociados(17), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
+    public void EliminarLogicamente_SinFilasEliminadas_DevuelveError()
+    {
+        _repository.Setup(r => r.TieneMedicamentosActivosAsociados(17)).Returns(false);
+        _repository.Setup(r => r.Delete(It.Is<Clasificacion>(c => c.Id == 17 && c.IdUsuario == 9)))
+            .Returns(0);
+
+        var resultado = CrearServicio().EliminarLogicamente(17, 9);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("No se pudo eliminar la clasificación.", resultado.Error);
+        _repository.Verify(r => r.TieneMedicamentosActivosAsociados(17), Times.Once);
+        _repository.Verify(r => r.Delete(It.Is<Clasificacion>(c => c.Id == 17 && c.IdUsuario == 9)), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+
+    [Fact]
+    public void EliminarLogicamente_SinMedicamentosActivos_EnviaAmbosIdsYDevuelveExito()
+    {
+        var secuencia = new MockSequence();
+        _repository.InSequence(secuencia).Setup(r => r.TieneMedicamentosActivosAsociados(17)).Returns(false);
+        _repository.InSequence(secuencia)
+            .Setup(r => r.Delete(It.Is<Clasificacion>(c => c.Id == 17 && c.IdUsuario == 9))).Returns(1);
+
+        var resultado = CrearServicio().EliminarLogicamente(17, 9);
+
+        Assert.True(resultado.IsSuccess);
+        Assert.Equal(string.Empty, resultado.Error);
+        _repository.Verify(r => r.TieneMedicamentosActivosAsociados(17), Times.Once);
+        _repository.Verify(r => r.Delete(It.Is<Clasificacion>(c => c.Id == 17 && c.IdUsuario == 9)), Times.Once);
+        VerificarSinOtrasLlamadas();
+    }
+}

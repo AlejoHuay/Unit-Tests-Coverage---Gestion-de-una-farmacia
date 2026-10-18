@@ -13,4 +13,107 @@ public class StringHelperTests
 
         Assert.Equal("Paracetamol", resultado);
     }
+
+    [Fact]
+    public void Limpiar_ConNull_DevuelveVacio()
+    {
+        Assert.Empty(StringHelper.Limpiar(null));
+    }
+
+    [Fact]
+    public void Limpiar_ConEspaciosInteriores_NoLosColapsa()
+    {
+        Assert.Equal("Ana   Maria", StringHelper.Limpiar(" Ana   Maria "));
+    }
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("  Ana\t \r\nMaria  ", "Ana Maria")]
+    public void LimpiarEspacios_AusenciaYTextoMixto_DevuelveValorNormalizado(string? texto, string esperado)
+    {
+        Assert.Equal(esperado, StringHelper.LimpiarEspacios(texto));
+    }
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("  CI\t 123\r\nLP  ", "CI123LP")]
+    public void QuitarEspacios_AusenciaYTextoMixto_DevuelveValorNormalizado(string? texto, string esperado)
+    {
+        Assert.Equal(esperado, StringHelper.QuitarEspacios(texto));
+    }
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("  Ana\t \r\nMaria  ", "Ana Maria")]
+    public void LimpiarTexto_AusenciaYTextoMixto_DevuelveValorNormalizado(string? texto, string esperado)
+    {
+        Assert.Equal(esperado, StringHelper.LimpiarTexto(texto));
+    }
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("  ácido\t fólico  ", "ÁCIDO FÓLICO")]
+    public void LimpiarTextoMayus_AusenciaYTextoMixto_DevuelveValorNormalizado(string? texto, string esperado)
+    {
+        Assert.Equal(esperado, StringHelper.LimpiarTextoMayus(texto));
+    }
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("  ÁCIDO\t FÓLICO  ", "ácido fólico")]
+    public void LimpiarTextoMinus_AusenciaYTextoMixto_DevuelveValorNormalizado(string? texto, string esperado)
+    {
+        Assert.Equal(esperado, StringHelper.LimpiarTextoMinus(texto));
+    }
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData("CI 12-3A\t.4", "1234")]
+    public void SoloNumeros_AusenciaYTextoMixto_DevuelveValorNormalizado(string? texto, string esperado)
+    {
+        Assert.Equal(esperado, StringHelper.SoloNumeros(texto));
+    }
+
+    [Theory]
+    [InlineData(null, "")]
+    [InlineData(" 12\t3 lp\r\n ", "123LP")]
+    public void LimpiarCI_AusenciaYTextoMixto_DevuelveValorNormalizado(string? texto, string esperado)
+    {
+        Assert.Equal(esperado, StringHelper.LimpiarCI(texto));
+    }
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData("A B", true)]
+    [InlineData("Ana X", true)]
+    [InlineData("X Ana", true)]
+    [InlineData("DE Ana", false)]
+    [InlineData("Ana DE", false)]
+    [InlineData("Ana Maria", false)]
+    [InlineData("Al Li", false)]
+    [InlineData("Ana Li Wu", true)]
+    [InlineData("Ana DE Maria", false)]
+    [InlineData("Ana Maria Jose Luis", false)]
+    [InlineData("X Ana Maria", false)]
+    public void NombrePareceFragmentado_ReglasDeLongitudYConectores_ClasificaSegunContrato(string? nombre, bool esperado)
+    {
+        Assert.Equal(esperado, StringHelper.NombrePareceFragmentado(nombre));
+    }
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData("A Perez", true)]
+    [InlineData("Perez Li", true)]
+    [InlineData("Li Perez", true)]
+    [InlineData("DE Perez", false)]
+    [InlineData("Perez DE", false)]
+    [InlineData("Li Wu", false)]
+    [InlineData("Perez Gomez", false)]
+    [InlineData("Perez Li Gomez", true)]
+    [InlineData("Perez de Gomez", false)]
+    [InlineData("Perez", false)]
+    public void ApellidoPareceFragmentado_ReglasDeLongitudYConectores_ClasificaSegunContrato(string? apellido, bool esperado)
+    {
+        Assert.Equal(esperado, StringHelper.ApellidoPareceFragmentado(apellido));
+    }
 }

@@ -1,123 +1,65 @@
 using Microsoft.Extensions.Configuration;
-using Moq;
 using ProyectoArqSoft.Application.Services;
+using ProyectoArqSoft.Domain.Validators;
 using Xunit;
 
-namespace ProyectoArqSoft.Tests.Services
+namespace ProyectoArqSoft.Tests.Services;
+
+public class EmailServiceTests
 {
-    public class EmailServiceTests
+    [Theory]
+    [InlineData(null, "Ana", "ana", "Password123", "https://example.test/activate",
+        "El correo destino es obligatorio.")]
+    [InlineData("ana@example.test", "Ana", " ", "Password123", "https://example.test/activate",
+        "El nombre de usuario es obligatorio para el correo.")]
+    [InlineData("ana@example.test", "Ana", "ana", "", "https://example.test/activate",
+        "La contraseña temporal es obligatoria para el correo.")]
+    [InlineData("ana@example.test", "Ana", "ana", "Password123", " ",
+        "El enlace de activación es obligatorio.")]
+    public void EnviarCorreoActivacionCuenta_CampoObligatorioVacio_RetornaError(
+        string? email,
+        string nombres,
+        string userName,
+        string passwordTemporal,
+        string enlace,
+        string errorEsperado)
     {
-        private static EmailService CrearServicio()
-        {
-            var section = new Mock<IConfigurationSection>();
+        // Arrange
+        var configuracion = new ConfigurationBuilder().Build();
+        var servicio = new EmailService(configuracion);
 
-            var configuration = new Mock<IConfiguration>();
-            configuration
-                .Setup(c => c.GetSection("SmtpSettings"))
-                .Returns(section.Object);
+        // Act
+        Result resultado = servicio.EnviarCorreoActivacionCuenta(
+            email!,
+            nombres,
+            userName,
+            passwordTemporal,
+            enlace);
 
-            return new EmailService(configuration.Object);
-        }
+        // Assert
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal(errorEsperado, resultado.Error);
+    }
 
-        [Fact]
-        public void EnviarCorreoActivacionCuenta_ConCorreoVacio_DevuelveError()
-        {
-            // Arrange - C1: 1 -> 2 -> 3 -> 4 -> 18
-            var service = CrearServicio();
+    [Fact]
+    public void EnviarCorreoActivacionCuenta_ConfiguracionSmtpInvalida_RetornaErrorSinEnviarCorreo()
+    {
+        // Arrange
+        var configuracion = new ConfigurationBuilder().Build();
+        var servicio = new EmailService(configuracion);
 
-            // Act
-            var resultado = service.EnviarCorreoActivacionCuenta(
-                "   ", "Ana", "ana01", "Temporal123",
-                "https://example.test/activar");
+        // Act
+        Result resultado = servicio.EnviarCorreoActivacionCuenta(
+            "ana@example.test",
+            " Ana ",
+            " ana ",
+            " Password123 ",
+            " https://example.test/activate ");
 
-            // Assert
-            Assert.False(resultado.IsSuccess);
-            Assert.Equal("El correo destino es obligatorio.", resultado.Error);
-        }
-
-        [Fact]
-        public void EnviarCorreoActivacionCuenta_ConUsuarioVacio_DevuelveError()
-        {
-            // Arrange - C2: 1 -> 2 -> 3 -> 5 -> 6 -> 18
-            var service = CrearServicio();
-
-            // Act
-            var resultado = service.EnviarCorreoActivacionCuenta(
-                "ana@example.test", "Ana", "   ", "Temporal123",
-                "https://example.test/activar");
-
-            // Assert
-            Assert.False(resultado.IsSuccess);
-            Assert.Equal(
-                "El nombre de usuario es obligatorio para el correo.",
-                resultado.Error);
-        }
-
-        [Fact]
-        public void EnviarCorreoActivacionCuenta_ConPasswordVacio_DevuelveError()
-        {
-            // Arrange - C3: 1 -> 2 -> 3 -> 5 -> 7 -> 8 -> 18
-            var service = CrearServicio();
-
-            // Act
-            var resultado = service.EnviarCorreoActivacionCuenta(
-                "ana@example.test", "Ana", "ana01", "   ",
-                "https://example.test/activar");
-
-            // Assert
-            Assert.False(resultado.IsSuccess);
-            Assert.Equal(
-                "La contraseña temporal es obligatoria para el correo.",
-                resultado.Error);
-        }
-
-        [Fact]
-        public void EnviarCorreoActivacionCuenta_ConEnlaceVacio_DevuelveError()
-        {
-            // Arrange - C4: 1 -> 2 -> 3 -> 5 -> 7 -> 9 -> 10 -> 18
-            var service = CrearServicio();
-
-            // Act
-            var resultado = service.EnviarCorreoActivacionCuenta(
-                "ana@example.test", "Ana", "ana01", "Temporal123",
-                "   ");
-
-            // Assert
-            Assert.False(resultado.IsSuccess);
-            Assert.Equal(
-                "El enlace de activación es obligatorio.",
-                resultado.Error);
-        }
-
-        [Fact]
-        public void EnviarCorreoActivacionCuenta_ConRemitenteInvalido_DevuelveError()
-        {
-            // Arrange - C6: 1 -> 2 -> 3 -> 5 -> 7 -> 9
-            //               -> 11 -> 12 -> 16 -> 17 -> 18
-            // La configuracion SMTP ficticia tiene remitente vacio.
-            var service = CrearServicio();
-
-            // Act
-            var resultado = service.EnviarCorreoActivacionCuenta(
-                "ana@example.test",
-                "Ana",
-                "ana01",
-                "Temporal123",
-                "https://example.test/activar"
-            );
-
-            // Assert
-            // El servicio recibe un remitente vacio en SmtpSettings.
-            // MailAddress debe rechazarlo antes de crear SmtpClient.
-            Assert.Throws<ArgumentException>(() =>
-                new System.Net.Mail.MailAddress(string.Empty, string.Empty));
-
-            Assert.False(resultado.IsSuccess);
-            Assert.StartsWith(
-                "No se pudo enviar el correo",
-                resultado.Error
-            );
-        }
+        // Assert
+        Assert.False(resultado.IsSuccess);
+        Assert.StartsWith("No se pudo enviar el correo electrónico. Detalle:", resultado.Error);
+    }
 
         [Fact]
         public void EnviarCorreoActivacionCuenta_ConPuertoSmtpInvalido_DevuelveError()
@@ -167,6 +109,7 @@ namespace ProyectoArqSoft.Tests.Services
                 resultado.Error.ToLowerInvariant()
             );
         }
+
 
         [Fact]
         public void EnviarCorreoActivacionCuenta_ConServidorSmtpNoDisponible_DevuelveError()
@@ -230,5 +173,4 @@ namespace ProyectoArqSoft.Tests.Services
                 resultado.Error
             );
         }
-    }
 }
