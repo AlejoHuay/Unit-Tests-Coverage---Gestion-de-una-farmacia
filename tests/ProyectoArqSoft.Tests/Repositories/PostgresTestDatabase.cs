@@ -63,6 +63,11 @@ internal sealed class PostgresTestDatabase : IDisposable
                 INSERT INTO cliente(id,nit,razon_social) VALUES (1,'111','Cliente Uno'),(2,'222','Cliente Dos');
                 INSERT INTO medicamento(id,nombre,presentacion,id_clasificacion,concentracion,precio,stock)
                 VALUES (1,'Paracetamol','Tableta',1,'500mg',10,20),(2,'Ibuprofeno','Tableta',1,'400mg',5,30);
+                -- Los IDs explicitos de la semilla no avanzan las secuencias IDENTITY.
+                SELECT setval(pg_get_serial_sequence('usuario', 'id'), (SELECT max(id) FROM usuario), true);
+                SELECT setval(pg_get_serial_sequence('clasificacion', 'id'), (SELECT max(id) FROM clasificacion), true);
+                SELECT setval(pg_get_serial_sequence('cliente', 'id'), (SELECT max(id) FROM cliente), true);
+                SELECT setval(pg_get_serial_sequence('medicamento', 'id'), (SELECT max(id) FROM medicamento), true);
                 """);
             var http = new DefaultHttpContext
             {

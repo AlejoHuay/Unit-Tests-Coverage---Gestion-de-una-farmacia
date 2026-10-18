@@ -120,7 +120,7 @@ namespace ProyectoArqSoft.Infrastructure.Persistence.Repositories
         {
             string query = @"SELECT id, nombre, presentacion, id_clasificacion, concentracion, precio, stock
                              FROM medicamento
-                             WHERE id = @id";
+                             WHERE id = @id AND estado = 1";
 
             using (NpgsqlConnection connection = database.CreateConnection())
             {
