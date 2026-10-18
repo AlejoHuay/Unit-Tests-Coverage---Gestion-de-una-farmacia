@@ -85,6 +85,15 @@ los necesitas como evidencia.
 3. Ejecuta nuevamente el mismo script y compara cobertura de lineas y ramas,
    tanto global como por clase, en el HTML y su historial.
 
+Las pruebas de `Validators/` son unitarias y no requieren PostgreSQL. Las de
+`Repositories/` usan `PostgresTestDatabase`, que crea una base exclusiva por
+prueba; si no se configura el entorno PostgreSQL, xUnit las marca como omitidas.
+Para ejecutarlas con cobertura se necesita PostgreSQL 17 o posterior instalado:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\Invoke-PostgresTests.ps1 -Coverage
+```
+
 Para ejecutar solo las pruebas:
 
 ```powershell
