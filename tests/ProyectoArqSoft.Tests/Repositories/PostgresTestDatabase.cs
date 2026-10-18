@@ -31,6 +31,9 @@ internal sealed class PostgresTestDatabase : IDisposable
     private readonly string _name = "venta_test_" + Guid.NewGuid().ToString("N");
     private readonly NpgsqlDataSource _source;
     public VentaRepository Repository { get; }
+    public ClienteRepository ClienteRepository { get; }
+    public MedicamentoRepository MedicamentoRepository { get; }
+    public ClasificacionRepository ClasificacionRepository { get; }
 
     public PostgresTestDatabase()
     {
@@ -65,7 +68,11 @@ internal sealed class PostgresTestDatabase : IDisposable
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "2") }, "Tests"))
             };
-            Repository = new VentaRepository(new PostgresDatabase(_source, new HttpContextAccessor { HttpContext = http }));
+            var database = new PostgresDatabase(_source, new HttpContextAccessor { HttpContext = http });
+            Repository = new VentaRepository(database);
+            ClienteRepository = new ClienteRepository(database);
+            MedicamentoRepository = new MedicamentoRepository(database);
+            ClasificacionRepository = new ClasificacionRepository(database);
         }
         catch { Dispose(); throw; }
     }
