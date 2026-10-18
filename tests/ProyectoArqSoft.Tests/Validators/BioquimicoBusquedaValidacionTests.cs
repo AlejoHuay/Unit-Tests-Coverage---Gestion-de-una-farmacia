@@ -5,57 +5,72 @@ namespace ProyectoArqSoft.Tests.Validators;
 
 public class BioquimicoBusquedaValidacionTests
 {
+    private readonly BioquimicoBusquedaValidacion _validador = new();
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    [InlineData("   ")]
-    public void Validar_FiltroVacio_RetornaExito(string? filtro)
+    [InlineData(" \t\r\n ")]
+    public void Validar_SinCriterio_DevuelveExito(string? filtro)
     {
-        // Arrange
-        var validador = new BioquimicoBusquedaValidacion();
+        // El helper admite null aunque la firma del validador no sea nullable.
+        var resultado = _validador.Validar(filtro!);
 
-        // Act
-        var resultado = validador.Validar(filtro!);
-
-        // Assert
         Assert.True(resultado.IsSuccess);
-        Assert.Equal(string.Empty, resultado.Error);
+        Assert.Empty(resultado.Error);
     }
 
     [Theory]
     [InlineData("ab", "El criterio debe tener al menos 3 caracteres.")]
-    [InlineData("1234567890123456789012345678901234567890123456", "El criterio no puede tener más de 45 caracteres.")]
     [InlineData("Ana@", "Criterio inválido.")]
-    [InlineData("Ana123", "Criterio inválido.")]
-    [InlineData("123-456", "Criterio inválido.")]
-    public void Validar_FiltroInvalido_RetornaError(string filtro, string errorEsperado)
+    public void Validar_ErrorGeneral_ConservaElMensaje(string filtro, string error)
     {
-        // Arrange
-        var validador = new BioquimicoBusquedaValidacion();
+        var resultado = _validador.Validar(filtro);
 
-        // Act
-        var resultado = validador.Validar(filtro);
-
-        // Assert
         Assert.False(resultado.IsSuccess);
-        Assert.Equal(errorEsperado, resultado.Error);
+        Assert.Equal(error, resultado.Error);
     }
 
     [Theory]
-    [InlineData("Ana Maria")]
-    [InlineData("12345")]
-    [InlineData("12345-6A")]
-    [InlineData(" Ana   Maria ")]
-    public void Validar_FiltroPermitido_RetornaExito(string filtro)
+    [InlineData(2, "El criterio debe tener al menos 3 caracteres.")]
+    [InlineData(3, "")]
+    [InlineData(45, "")]
+    [InlineData(46, "El criterio no puede tener más de 45 caracteres.")]
+    public void Validar_LimitesDeLongitud_EvaluaElTextoLimpio(int longitud, string error)
     {
-        // Arrange
-        var validador = new BioquimicoBusquedaValidacion();
+        var filtro = "  " + new string('a', longitud) + "  ";
 
-        // Act
-        var resultado = validador.Validar(filtro);
+        var resultado = _validador.Validar(filtro);
 
-        // Assert
+        Assert.Equal(error.Length == 0, resultado.IsSuccess);
+        Assert.Equal(error, resultado.Error);
+    }
+
+    [Theory]
+    [InlineData("Ana Perez")]
+    [InlineData("123456")]
+    [InlineData("123-4A")]
+    [InlineData(" \tAna   Perez\r\n ")]
+    public void Validar_FormatoPermitido_DevuelveExito(string filtro)
+    {
+        var resultado = _validador.Validar(filtro);
+
         Assert.True(resultado.IsSuccess);
-        Assert.Equal(string.Empty, resultado.Error);
+        Assert.Empty(resultado.Error);
+    }
+
+    [Theory]
+    [InlineData("Ana123")]
+    [InlineData("123-4a")]
+    [InlineData("123-45A")]
+    [InlineData("Ana-Perez")]
+    [InlineData("José")]
+    public void Validar_FormatoNoPermitidoPorRegex_DevuelveError(string filtro)
+    {
+        // Estos textos pasan el helper general y fallan en la expresión regular.
+        var resultado = _validador.Validar(filtro);
+
+        Assert.False(resultado.IsSuccess);
+        Assert.Equal("Criterio inválido.", resultado.Error);
     }
 }
